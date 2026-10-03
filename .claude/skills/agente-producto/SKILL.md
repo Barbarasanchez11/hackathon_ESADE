@@ -4,7 +4,7 @@ description: Cómo construir o modificar un agente del producto Relevo (Preparad
 ---
 
 Cada agente es un grafo de LangGraph en backend/agents/<nombre>.py con:
-1. Un nodo que llama al modelo con un prompt en backend/prompts/<nombre>.md.
+1. Una llamada al modelo con un prompt en backend/prompts/<nombre>.md. Si la entrada es sensible (transcripciones, datos personales), llama al modelo fuera del grafo y mete en el estado solo el resultado: el checkpointer guarda cada paso y conservaría la entrada. Ejemplo: backend/agents/espejo.py.
 2. Salida validada con un modelo de Pydantic; si no valida, reintenta una vez.
 3. Un nodo de aprobación humana antes de cualquier efecto (enviar, presentar).
 4. Un endpoint en FastAPI en /api/<nombre> y un fallback simulado en src/api.js.

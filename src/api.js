@@ -17,7 +17,9 @@ async function pedir(ruta, opciones = {}, timeout = TIMEOUT_MS) {
     });
     const datos = await r.json().catch(() => ({}));
     if (!r.ok) {
-      const error = new Error(datos.detail || `Error ${r.status}`);
+      // FastAPI devuelve una lista en los 422: mensaje propio en español.
+      const mensaje = typeof datos.detail === "string" ? datos.detail : "Revisa los datos del café: falta información.";
+      const error = new Error(mensaje);
       error.status = r.status;
       throw error;
     }
@@ -29,7 +31,11 @@ async function pedir(ruta, opciones = {}, timeout = TIMEOUT_MS) {
 
 // Solo se muestran los errores de datos (por ejemplo, falta de consentimiento); el resto pasa a datos simulados.
 function esErrorDelUsuario(e) {
-  return e.status === 400 || e.status === 422;
+  return [400, 403, 422].includes(e.status);
+}
+
+function normalizar(texto) {
+  return texto.replace(/["'«»“”]/g, "").replace(/\s+/g, " ").trim().toLowerCase();
 }
 
 export async function crearEspejo(entrada) {
@@ -43,16 +49,22 @@ export async function crearEspejo(entrada) {
     return { ...datos, simulado: false };
   } catch (e) {
     if (esErrorDelUsuario(e)) throw e;
-    return { thread_id: "simulado", propuesta: structuredClone(PROPUESTA_SIMULADA), simulado: true };
+    // Igual que en el backend: solo quedan las evidencias cuya cita está en el texto enviado.
+    const propuesta = structuredClone(PROPUESTA_SIMULADA);
+    const fuente = normalizar(entrada.texto);
+    propuesta.evidencias = propuesta.evidencias.filter((e) => fuente.includes(normalizar(e.cita)));
+    return { thread_id: "simulado", propuesta, simulado: true };
   }
 }
 
 export async function decidirEspejo(threadId, decision, { simulado, junior }) {
+  // En una sesión real, un fallo nunca se convierte en una aprobación local: se muestra y se puede reintentar.
   if (!simulado) {
     try {
-      return await pedir(`/espejo/${threadId}/decision`, { method: "POST", body: JSON.stringify(decision) });
+      return await pedir(`/espejo/${threadId}/decision`, { method: "POST", body: JSON.stringify(decision) }, 15000);
     } catch (e) {
-      if (esErrorDelUsuario(e)) throw e;
+      if (e.status) throw e;
+      throw new Error("No se ha podido enviar la decisión. Comprueba la conexión y vuelve a intentarlo.");
     }
   }
   if (decision.accion === "descartar") return { estado: "descartado", feedback: null };

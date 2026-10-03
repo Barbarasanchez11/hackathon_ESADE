@@ -31,6 +31,8 @@ def crear_espejo(entrada: espejo.EspejoEntrada):
 def decidir_espejo(thread_id: str, decision: espejo.Decision):
     try:
         return espejo.decidir(thread_id, decision)
+    except espejo.AprobadorNoValido as e:
+        raise HTTPException(403, str(e))
     except KeyError:
         raise HTTPException(404, "No hay ninguna propuesta pendiente con ese identificador.")
 

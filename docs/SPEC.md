@@ -149,6 +149,8 @@ Huella de evidencias: cada skill se respalda con evidencias concretas de convers
 - [ ] La demo funciona aunque el backend esté caído (datos simulados).
 
 ## Preguntas abiertas
+- [PENDIENTE] El Guardián aún no está implementado: hoy solo el prompt y el esquema sin campos numéricos impiden notas dentro de los textos del Espejo.
+- [PENDIENTE] Sin autenticación, la huella (`GET /api/huella/{persona}`) es visible para cualquiera y se identifica por el nombre. Aceptable para la demo, no para un piloto.
 - ¿Segmento 1 (impacto social) o 3 (emprendedores) para la persona principal? Este spec usa el 1.
 - ¿Cinco presentaciones es el número correcto?
 - ¿Qué institución inicia las primeras cadenas?

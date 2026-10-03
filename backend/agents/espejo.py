@@ -53,8 +53,13 @@ class SinConsentimiento(EspejoError):
     pass
 
 
+class AprobadorNoValido(EspejoError):
+    pass
+
+
 class Estado(TypedDict, total=False):
-    entrada: dict
+    junior: str
+    senior: str
     propuesta: dict
     feedback: dict
     estado: str
@@ -131,19 +136,8 @@ def generar_feedback(entrada: EspejoEntrada) -> EspejoSalida:
 
 
 # --- Nodos del grafo ---
-
-def comprobar_consentimiento(estado: Estado) -> Estado:
-    if not consentimiento_ok(EspejoEntrada(**estado["entrada"])):
-        raise SinConsentimiento("Falta el consentimiento de las dos personas para usar el audio.")
-    return {}
-
-
-def generar(estado: Estado) -> Estado:
-    entrada = EspejoEntrada(**estado["entrada"])
-    propuesta = generar_feedback(entrada)
-    # La transcripción no se conserva una vez generada la propuesta.
-    return {"propuesta": propuesta.model_dump(), "entrada": {**estado["entrada"], "texto": ""}, "estado": "pendiente"}
-
+# La transcripción nunca entra en el estado del grafo: el checkpointer guarda cada paso
+# y la conservaría. Se genera la propuesta antes y el grafo solo ve la propuesta.
 
 def aprobacion_senior(estado: Estado) -> Command:
     decision = Decision(**interrupt({"propuesta": estado["propuesta"]}))
@@ -155,7 +149,7 @@ def aprobacion_senior(estado: Estado) -> Command:
 
 def publicar(estado: Estado) -> Estado:
     feedback = estado["feedback"]
-    persona = estado["entrada"]["junior"].lower()
+    persona = estado["junior"].lower()
     hoy = date.today().isoformat()
     HUELLA.setdefault(persona, []).extend(
         {**e, "confirmada_por": feedback["aprobado_por"], "fecha": hoy} for e in feedback["evidencias"]
@@ -165,13 +159,9 @@ def publicar(estado: Estado) -> Estado:
 
 def _construir_grafo():
     g = StateGraph(Estado)
-    g.add_node("comprobar_consentimiento", comprobar_consentimiento)
-    g.add_node("generar", generar)
     g.add_node("aprobacion_senior", aprobacion_senior, destinations=("publicar", END))
     g.add_node("publicar", publicar)
-    g.add_edge(START, "comprobar_consentimiento")
-    g.add_edge("comprobar_consentimiento", "generar")
-    g.add_edge("generar", "aprobacion_senior")
+    g.add_edge(START, "aprobacion_senior")
     g.add_edge("publicar", END)
     return g.compile(checkpointer=InMemorySaver())
 
@@ -184,16 +174,21 @@ grafo = _construir_grafo()
 def iniciar(entrada: EspejoEntrada) -> tuple[str, dict]:
     if not consentimiento_ok(entrada):
         raise SinConsentimiento("Falta el consentimiento de las dos personas para usar el audio.")
+    propuesta = generar_feedback(entrada).model_dump()
     thread_id = str(uuid.uuid4())
     config = {"configurable": {"thread_id": thread_id}}
-    grafo.invoke({"entrada": entrada.model_dump()}, config)
-    return thread_id, grafo.get_state(config).values["propuesta"]
+    grafo.invoke({"junior": entrada.junior, "senior": entrada.senior, "propuesta": propuesta, "estado": "pendiente"}, config)
+    return thread_id, propuesta
 
 
 def decidir(thread_id: str, decision: Decision) -> dict:
     config = {"configurable": {"thread_id": thread_id}}
-    if grafo.get_state(config).next != ("aprobacion_senior",):
+    estado = grafo.get_state(config)
+    if estado.next != ("aprobacion_senior",):
         raise KeyError(thread_id)
+    # Sin autenticación (fuera de alcance), al menos solo decide la senior del café.
+    if decision.aprobado_por.strip().lower() != estado.values["senior"].strip().lower():
+        raise AprobadorNoValido("Solo la persona senior del café puede aprobar o descartar la propuesta.")
     grafo.invoke(Command(resume=decision.model_dump()), config)
     valores = grafo.get_state(config).values
     return {"estado": valores["estado"], "feedback": valores.get("feedback")}

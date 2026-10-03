@@ -51,8 +51,28 @@ def test_aprobar_publica_en_la_huella_y_borra_la_transcripcion(cliente):
     huella = cliente.get("/api/huella/Nadia").json()
     assert huella["Preparación"][0]["confirmada_por"] == "Javier"
 
+    # La transcripción no aparece en ningún punto de control del grafo.
     config = {"configurable": {"thread_id": thread_id}}
-    assert espejo.grafo.get_state(config).values["entrada"]["texto"] == ""
+    for punto in espejo.grafo.get_state_history(config):
+        assert "Javier: Claro" not in str(punto.values)
+
+
+def test_solo_la_senior_puede_decidir(cliente):
+    thread_id = cliente.post("/api/espejo", json=ENTRADA).json()["thread_id"]
+    r = cliente.post(f"/api/espejo/{thread_id}/decision", json={"accion": "aprobar", "aprobado_por": "Marta"})
+    assert r.status_code == 403
+    assert cliente.get("/api/huella/Nadia").json() == {}
+
+
+def test_si_el_modelo_falla_no_queda_nada_guardado(cliente, monkeypatch):
+    def falla(entrada):
+        raise espejo.EspejoError("caído")
+
+    monkeypatch.setattr(espejo, "llamar_modelo", falla)
+    antes = len(espejo.grafo.checkpointer.storage)
+    r = cliente.post("/api/espejo", json=ENTRADA)
+    assert r.status_code == 502
+    assert len(espejo.grafo.checkpointer.storage) == antes
 
 
 def test_aprobar_con_edicion_usa_la_version_corregida(cliente):

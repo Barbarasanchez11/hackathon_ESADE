@@ -4,6 +4,7 @@
   --texto: #1d1b18;
   --texto-suave: #57534b;
   --borde: #d6d1c6;
+  --borde-control: #8a8478;
   --acento: #1f5f4a;
   --acento-texto: #ffffff;
   --aviso-fondo: #fdf3dc;
@@ -19,6 +20,7 @@
     --texto: #f1eee8;
     --texto-suave: #bdb7ab;
     --borde: #45413a;
+    --borde-control: #7a746a;
     --acento: #7fd1b0;
     --acento-texto: #10231c;
     --aviso-fondo: #3a3220;
@@ -108,7 +110,7 @@ textarea {
   font: inherit;
   color: var(--texto);
   background: var(--superficie);
-  border: 1px solid var(--borde);
+  border: 1px solid var(--borde-control);
   border-radius: 8px;
   margin-bottom: 12px;
 }
@@ -180,7 +182,30 @@ button:disabled {
 .secundario {
   background: transparent;
   color: var(--texto);
-  border: 1px solid var(--borde);
+  border: 1px solid var(--borde-control);
+}
+
+button[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.aviso-fuerte {
+  border: 2px solid var(--borde-control);
+  font-weight: 600;
+}
+
+.solo-lector {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+h2:focus {
+  outline: none;
 }
 
 :focus-visible {

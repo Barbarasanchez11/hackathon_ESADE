@@ -1,9 +1,22 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { crearEspejo, decidirEspejo, verHuella } from "./api.js";
 import { TRANSCRIPCION_CAFE } from "./datos/cafe.js";
 
 const JUNIOR = "Nadia";
 const SENIOR = "Javier";
+
+// Título que recibe el foco al cambiar de pantalla, para que el lector de pantalla la anuncie.
+function Titulo({ children }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    ref.current?.focus();
+  }, []);
+  return (
+    <h2 ref={ref} tabIndex={-1}>
+      {children}
+    </h2>
+  );
+}
 
 function Cafe({ onPropuesta }) {
   const [origen, setOrigen] = useState("audio");
@@ -14,9 +27,17 @@ function Cafe({ onPropuesta }) {
   const [error, setError] = useState("");
 
   const faltaConsentimiento = origen === "audio" && !(consJunior && consSenior);
+  const bloqueado = faltaConsentimiento || cargando || !texto.trim();
+
+  // Al cambiar de origen se cambia el texto: las notas nunca arrastran la transcripción del audio.
+  function cambiarOrigen(nuevo) {
+    setOrigen(nuevo);
+    setTexto(nuevo === "audio" ? TRANSCRIPCION_CAFE : "");
+  }
 
   async function generar(e) {
     e.preventDefault();
+    if (bloqueado) return;
     setCargando(true);
     setError("");
     try {
@@ -31,23 +52,24 @@ function Cafe({ onPropuesta }) {
       onPropuesta(r);
     } catch (err) {
       setError(err.message);
-    } finally {
       setCargando(false);
     }
   }
 
   return (
-    <form onSubmit={generar} className="tarjeta">
-      <h2>El café de {JUNIOR} con {SENIOR}</h2>
+    <form onSubmit={generar} className="tarjeta" aria-busy={cargando}>
+      <Titulo>
+        El café de {JUNIOR} con {SENIOR}
+      </Titulo>
 
       <fieldset>
         <legend>¿De dónde sale la conversación?</legend>
         <label className="opcion">
-          <input type="radio" name="origen" value="audio" checked={origen === "audio"} onChange={() => setOrigen("audio")} />
+          <input type="radio" name="origen" value="audio" checked={origen === "audio"} onChange={() => cambiarOrigen("audio")} />
           Transcripción del audio
         </label>
         <label className="opcion">
-          <input type="radio" name="origen" value="notas" checked={origen === "notas"} onChange={() => setOrigen("notas")} />
+          <input type="radio" name="origen" value="notas" checked={origen === "notas"} onChange={() => cambiarOrigen("notas")} />
           Notas de {JUNIOR}
         </label>
       </fieldset>
@@ -56,26 +78,44 @@ function Cafe({ onPropuesta }) {
         <fieldset>
           <legend>Consentimiento para usar el audio</legend>
           <label className="opcion">
-            <input type="checkbox" checked={consJunior} onChange={(e) => setConsJunior(e.target.checked)} />
+            <input type="checkbox" aria-describedby="privacidad" checked={consJunior} onChange={(e) => setConsJunior(e.target.checked)} />
             {JUNIOR} da su consentimiento
           </label>
           <label className="opcion">
-            <input type="checkbox" checked={consSenior} onChange={(e) => setConsSenior(e.target.checked)} />
+            <input type="checkbox" aria-describedby="privacidad" checked={consSenior} onChange={(e) => setConsSenior(e.target.checked)} />
             {SENIOR} da su consentimiento
           </label>
-          <p className="ayuda">El audio solo se usa para generar el feedback. La transcripción se borra después.</p>
+          <p id="privacidad" className="ayuda">
+            El audio solo se usa para preparar la propuesta. La transcripción no se guarda.
+          </p>
         </fieldset>
       )}
 
       <label htmlFor="texto">{origen === "audio" ? "Transcripción" : "Notas"}</label>
       <textarea id="texto" rows={10} value={texto} onChange={(e) => setTexto(e.target.value)} />
 
-      {error && <p role="alert" className="error">{error}</p>}
-      {faltaConsentimiento && <p className="ayuda">Necesitamos el consentimiento de las dos personas.</p>}
+      {error && (
+        <p role="alert" className="error">
+          {error}
+        </p>
+      )}
+      {faltaConsentimiento && (
+        <p id="motivo" className="ayuda">
+          Necesitamos el consentimiento de las dos personas.
+        </p>
+      )}
 
-      <button type="submit" className="principal" disabled={faltaConsentimiento || cargando || !texto.trim()}>
-        {cargando ? "Generando feedback…" : "Generar feedback"}
+      <button
+        type="submit"
+        className="principal"
+        aria-disabled={bloqueado}
+        aria-describedby={faltaConsentimiento ? "motivo" : undefined}
+      >
+        {cargando ? "Generando propuesta…" : "Generar propuesta"}
       </button>
+      <p className="solo-lector" aria-live="polite">
+        {cargando ? "Generando la propuesta, espera un momento." : ""}
+      </p>
     </form>
   );
 }
@@ -84,6 +124,7 @@ function ListaEditable({ titulo, items, onChange }) {
   return (
     <fieldset>
       <legend>{titulo}</legend>
+      {items.length === 0 && <p className="ayuda">Sin elementos.</p>}
       {items.map((item, i) => (
         <div key={i} className="fila">
           <textarea
@@ -92,11 +133,19 @@ function ListaEditable({ titulo, items, onChange }) {
             value={item}
             onChange={(e) => onChange(items.map((x, j) => (j === i ? e.target.value : x)))}
           />
-          <button type="button" className="secundario" onClick={() => onChange(items.filter((_, j) => j !== i))}>
+          <button
+            type="button"
+            className="secundario"
+            aria-label={`Quitar «${titulo}» ${i + 1}`}
+            onClick={() => onChange(items.filter((_, j) => j !== i))}
+          >
             Quitar
           </button>
         </div>
       ))}
+      <button type="button" className="secundario" onClick={() => onChange([...items, ""])}>
+        Añadir a «{titulo}»
+      </button>
     </fieldset>
   );
 }
@@ -107,12 +156,18 @@ function Revision({ sesion, onDecision }) {
   const [error, setError] = useState("");
 
   async function decidir(accion) {
+    if (accion === "descartar" && !window.confirm(`¿Descartar la propuesta? ${JUNIOR} no recibirá nada.`)) return;
     setEnviando(true);
     setError("");
+    const limpia = {
+      ...p,
+      bien: p.bien.filter((x) => x.trim()),
+      a_mejorar: p.a_mejorar.filter((x) => x.trim()),
+    };
     try {
       const r = await decidirEspejo(
         sesion.thread_id,
-        { accion, aprobado_por: SENIOR, propuesta_editada: p },
+        { accion, aprobado_por: SENIOR, propuesta_editada: limpia },
         { simulado: sesion.simulado, junior: JUNIOR },
       );
       onDecision(r);
@@ -123,9 +178,16 @@ function Revision({ sesion, onDecision }) {
   }
 
   return (
-    <section className="tarjeta">
-      <h2>Revisión de {SENIOR}</h2>
-      <p className="aviso">Propuesta de Relevo, revísala antes de enviar. {JUNIOR} no verá nada hasta que la apruebes.</p>
+    <section className="tarjeta" aria-busy={enviando}>
+      <Titulo>Revisión de {SENIOR}</Titulo>
+      <p className="aviso">
+        Propuesta de Relevo, revísala antes de enviar. {JUNIOR} no verá nada hasta que la apruebes.
+      </p>
+      {sesion.simulado && (
+        <p className="aviso aviso-fuerte">
+          Propuesta de ejemplo: no se ha podido conectar con Relevo y esta propuesta no sale de esta conversación.
+        </p>
+      )}
 
       <ListaEditable titulo="Lo que hizo bien" items={p.bien} onChange={(bien) => setP({ ...p, bien })} />
       <ListaEditable titulo="Lo que puede mejorar" items={p.a_mejorar} onChange={(a_mejorar) => setP({ ...p, a_mejorar })} />
@@ -148,6 +210,7 @@ function Revision({ sesion, onDecision }) {
             <button
               type="button"
               className="secundario"
+              aria-label={`Quitar evidencia de ${ev.skill}`}
               onClick={() => setP({ ...p, evidencias: p.evidencias.filter((_, j) => j !== i) })}
             >
               Quitar evidencia
@@ -159,24 +222,31 @@ function Revision({ sesion, onDecision }) {
       <label htmlFor="siguiente">Siguiente paso</label>
       <textarea id="siguiente" rows={2} value={p.siguiente_paso} onChange={(e) => setP({ ...p, siguiente_paso: e.target.value })} />
 
-      {error && <p role="alert" className="error">{error}</p>}
+      {error && (
+        <p role="alert" className="error">
+          {error}
+        </p>
+      )}
 
       <div className="acciones">
         <button type="button" className="principal" disabled={enviando} onClick={() => decidir("aprobar")}>
-          Aprobar y enviar a {JUNIOR}
+          {enviando ? "Enviando…" : `Aprobar y enviar a ${JUNIOR}`}
         </button>
         <button type="button" className="secundario" disabled={enviando} onClick={() => decidir("descartar")}>
-          Descartar
+          Descartar propuesta
         </button>
       </div>
+      <p className="solo-lector" aria-live="polite">
+        {enviando ? "Enviando la decisión." : ""}
+      </p>
     </section>
   );
 }
 
-function VistaNadia({ feedback, huella }) {
+function VistaNadia({ feedback, huella, onReiniciar }) {
   return (
     <section className="tarjeta">
-      <h2>Feedback para {JUNIOR}</h2>
+      <Titulo>Lo que te llevas del café</Titulo>
       <p className="ayuda">Revisado y aprobado por {feedback.aprobado_por}.</p>
 
       <h3>Lo que hiciste bien</h3>
@@ -202,6 +272,12 @@ function VistaNadia({ feedback, huella }) {
           </ul>
         </div>
       ))}
+
+      <div className="acciones">
+        <button type="button" className="secundario" onClick={onReiniciar}>
+          Empezar otro café
+        </button>
+      </div>
     </section>
   );
 }
@@ -245,17 +321,17 @@ export default function App() {
         />
       )}
       {paso === "revision" && <Revision sesion={sesion} onDecision={alDecidir} />}
-      {paso === "nadia" && <VistaNadia feedback={resultado.feedback} huella={huella} />}
+      {paso === "nadia" && <VistaNadia feedback={resultado.feedback} huella={huella} onReiniciar={reiniciar} />}
       {paso === "descartado" && (
         <section className="tarjeta">
-          <h2>Propuesta descartada</h2>
+          <Titulo>Propuesta descartada</Titulo>
           <p>{JUNIOR} no ha recibido nada.</p>
+          <div className="acciones">
+            <button type="button" className="secundario" onClick={reiniciar}>
+              Empezar otro café
+            </button>
+          </div>
         </section>
-      )}
-      {(paso === "nadia" || paso === "descartado") && (
-        <button type="button" className="secundario" onClick={reiniciar}>
-          Empezar otro café
-        </button>
       )}
     </main>
   );
