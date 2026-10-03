@@ -4,7 +4,7 @@ import ListaEditable from "../componentes/ListaEditable.jsx";
 import Titulo from "../componentes/Titulo.jsx";
 import { TRANSCRIPCION_CAFE } from "../datos/cafe.js";
 
-const JUNIOR = "Nadia";
+const JUNIOR = "Lucía";
 const SENIOR = "Javier";
 
 function Cafe({ onPropuesta }) {
@@ -202,7 +202,7 @@ function Revision({ sesion, onDecision }) {
   );
 }
 
-function VistaNadia({ feedback, huella, onReiniciar }) {
+function VistaLucía({ feedback, huella, onReiniciar }) {
   return (
     <section className="tarjeta">
       <Titulo>Lo que te llevas del café</Titulo>
@@ -257,7 +257,7 @@ export default function Espejo({ onEnCurso, onCompletado }) {
       onCompletado?.();
       // Si la huella no se puede leer, el feedback aprobado se muestra igualmente.
       setHuella(await verHuella(JUNIOR, { simulado: sesion.simulado }).catch(() => ({})));
-      setPaso("nadia");
+      setPaso("lucia");
     } else {
       setPaso("descartado");
     }
@@ -282,7 +282,7 @@ export default function Espejo({ onEnCurso, onCompletado }) {
         />
       )}
       {paso === "revision" && <Revision sesion={sesion} onDecision={alDecidir} />}
-      {paso === "nadia" && <VistaNadia feedback={resultado.feedback} huella={huella} onReiniciar={reiniciar} />}
+      {paso === "lucia" && <VistaLucía feedback={resultado.feedback} huella={huella} onReiniciar={reiniciar} />}
       {paso === "descartado" && (
         <section className="tarjeta">
           <Titulo>Propuesta descartada</Titulo>

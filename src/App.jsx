@@ -5,12 +5,12 @@ import Logo from "./componentes/Logo.jsx";
 import Proceso from "./componentes/Proceso.jsx";
 import Espejo from "./espejo/Espejo.jsx";
 import PasarRelevo from "./presentacion/PasarRelevo.jsx";
-import PresentarNadia from "./presentacion/PresentarNadia.jsx";
+import PresentarLucia from "./presentacion/PresentarLucia.jsx";
 
 const VISTAS = [
-  { id: "presentacion", titulo: "Presentar a Nadia", quien: "Marta → Nadia", Vista: PresentarNadia },
-  { id: "espejo", titulo: "El café", quien: "Nadia y Javier", Vista: Espejo },
-  { id: "relevo", titulo: "Pasar el relevo", quien: "Nadia → Iker", Vista: PasarRelevo },
+  { id: "presentacion", titulo: "Presentar a Lucía", quien: "Marta → Lucía", Vista: PresentarLucia },
+  { id: "espejo", titulo: "El café", quien: "Lucía y Javier", Vista: Espejo },
+  { id: "relevo", titulo: "Pasar el relevo", quien: "Lucía → Iker", Vista: PasarRelevo },
 ];
 
 export default function App() {
@@ -33,7 +33,7 @@ export default function App() {
   }
 
   async function reiniciar() {
-    if (!window.confirm("¿Reiniciar la demo? Nadia vuelve a 4 presentaciones y se borra lo que hayas hecho.")) return;
+    if (!window.confirm("¿Reiniciar la demo? Lucía vuelve a 4 presentaciones y se borra lo que hayas hecho.")) return;
     await reiniciarDemo();
     setEnCurso(false);
     setHechos(new Set());

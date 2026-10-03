@@ -6,11 +6,11 @@ from agents import conector, preparador
 from main import app
 
 BORRADOR = preparador.PreparadorSalida(
-    mensaje_presentacion="Hola, Javier y Nadia: os presento.",
+    mensaje_presentacion="Hola, Javier y Lucía: os presento.",
     ficha_para_junior=preparador.FichaJunior(
         sobre_la_persona="Javier lleva marketing.", preguntas_sugeridas=["¿Qué hace alguien en su primer año?"], que_evitar=["Pedir trabajo directamente."]
     ),
-    ficha_para_senior=preparador.FichaSenior(sobre_la_persona="Nadia estudia ADE.", en_que_puede_ayudar="Contarle cómo es el sector."),
+    ficha_para_senior=preparador.FichaSenior(sobre_la_persona="Lucía estudia ADE.", en_que_puede_ayudar="Contarle cómo es el sector."),
 )
 
 
@@ -23,7 +23,7 @@ def cliente(monkeypatch):
         return conector.ConectorSalida(propuestas=[
             conector.Propuesta(presentador="marta", persona_a_presentar="sofia", motivo="Datos."),
             conector.Propuesta(presentador="marta", persona_a_presentar="javier", motivo="Marketing."),
-            conector.Propuesta(presentador="marta", persona_a_presentar="lucia", motivo="No la conoce Marta."),
+            conector.Propuesta(presentador="marta", persona_a_presentar="carmen", motivo="No la conoce Marta."),
             conector.Propuesta(presentador="marta", persona_a_presentar="inventada", motivo="No existe."),
         ])
 
@@ -33,7 +33,7 @@ def cliente(monkeypatch):
 
 
 def _conector(cliente):
-    return cliente.post("/api/conector", json={"junior_id": "nadia", "busca": "Prácticas de marketing"}).json()
+    return cliente.post("/api/conector", json={"junior_id": "lucia", "busca": "Prácticas de marketing"}).json()
 
 
 def _elegir(cliente, eleccion="javier", por="Marta"):
@@ -55,7 +55,7 @@ def test_persona_sin_relevo_da_400(cliente):
 
 def test_solo_decide_quien_presenta(cliente):
     thread_id = _conector(cliente)["thread_id"]
-    r = cliente.post(f"/api/conector/{thread_id}/decision", json={"eleccion": "javier", "decidido_por": "Nadia"})
+    r = cliente.post(f"/api/conector/{thread_id}/decision", json={"eleccion": "javier", "decidido_por": "Lucía"})
     assert r.status_code == 403
 
 
@@ -74,22 +74,22 @@ def test_preparador_usa_la_eleccion_del_servidor_y_aprobar_suma_una(cliente):
 
     r = cliente.post(f"/api/preparador/{thread_id}/decision", json={"accion": "aprobar", "aprobado_por": "Marta"})
     assert r.json() == {"estado": "enviado"}
-    assert red.persona("nadia")["presentaciones_recibidas"] == 5
-    assert red.se_conocen("nadia", "javier")
+    assert red.persona("lucia")["presentaciones_recibidas"] == 5
+    assert red.se_conocen("lucia", "javier")
 
 
 def test_descartar_no_suma(cliente):
     thread_id = cliente.post("/api/preparador", json={"conector_thread_id": _elegir(cliente)}).json()["thread_id"]
     r = cliente.post(f"/api/preparador/{thread_id}/decision", json={"accion": "descartar", "aprobado_por": "Marta"})
     assert r.json()["estado"] == "descartado"
-    assert cliente.get("/api/red/nadia").json()["presentaciones_recibidas"] == 4
+    assert cliente.get("/api/red/lucia").json()["presentaciones_recibidas"] == 4
 
 
 def test_solo_aprueba_quien_presenta(cliente):
     thread_id = cliente.post("/api/preparador", json={"conector_thread_id": _elegir(cliente)}).json()["thread_id"]
     r = cliente.post(f"/api/preparador/{thread_id}/decision", json={"accion": "aprobar", "aprobado_por": "Javier"})
     assert r.status_code == 403
-    assert cliente.get("/api/red/nadia").json()["presentaciones_recibidas"] == 4
+    assert cliente.get("/api/red/lucia").json()["presentaciones_recibidas"] == 4
 
 
 def test_sin_eleccion_no_hay_preparador(cliente):
@@ -105,9 +105,9 @@ def test_cada_eleccion_se_prepara_una_vez(cliente):
 
 def test_con_varios_relevos_hay_que_elegir_quien_presenta(cliente):
     red.PERSONAS["iker"]["presentaciones_recibidas"] = 5
-    r = cliente.post("/api/conector", json={"junior_id": "nadia", "busca": "Prácticas"})
+    r = cliente.post("/api/conector", json={"junior_id": "lucia", "busca": "Prácticas"})
     assert r.status_code == 400
-    r = cliente.post("/api/conector", json={"junior_id": "nadia", "busca": "Prácticas", "presentador_id": "marta"})
+    r = cliente.post("/api/conector", json={"junior_id": "lucia", "busca": "Prácticas", "presentador_id": "marta"})
     assert r.status_code == 200
-    r = cliente.post("/api/conector", json={"junior_id": "nadia", "busca": "Prácticas", "presentador_id": "javier"})
+    r = cliente.post("/api/conector", json={"junior_id": "lucia", "busca": "Prácticas", "presentador_id": "javier"})
     assert r.status_code == 400

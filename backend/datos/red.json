@@ -1,6 +1,6 @@
 {
   "personas": [
-    {"id": "nadia", "nombre": "Nadia", "presentaciones_recibidas": 4,
+    {"id": "lucia", "nombre": "Lucía", "presentaciones_recibidas": 4,
      "comparte": {"rol": "Estudiante de último curso de ADE con beca", "sector": "Marketing", "intereses": ["primeras prácticas en marketing", "análisis de redes sociales", "Google Analytics"]}},
     {"id": "marta", "nombre": "Marta", "presentaciones_recibidas": 5,
      "comparte": {"rol": "Product marketing en una startup", "sector": "Marketing", "intereses": ["lanzamiento de producto", "ayudar a quien empieza"]}},
@@ -10,14 +10,14 @@
      "comparte": {"rol": "Analista de datos en una consultora", "sector": "Consultoría", "intereses": ["datos", "visualización"]}},
     {"id": "daniel", "nombre": "Daniel", "presentaciones_recibidas": 5,
      "comparte": {"rol": "Ventas B2B en una empresa de software", "sector": "Tecnología", "intereses": ["ventas", "negociación"]}},
-    {"id": "lucia", "nombre": "Lucía", "presentaciones_recibidas": 5,
+    {"id": "carmen", "nombre": "Carmen", "presentaciones_recibidas": 5,
      "comparte": {"rol": "Responsable del área de datos de marketing", "sector": "Marketing", "intereses": ["analítica", "medición de campañas"]}},
     {"id": "iker", "nombre": "Iker", "presentaciones_recibidas": 0,
      "comparte": {"rol": "Estudiante de FP de marketing digital", "sector": "Marketing", "intereses": ["redes sociales", "primeras prácticas"]}}
   ],
   "conexiones": [
-    ["nadia", "marta"], ["nadia", "iker"],
+    ["lucia", "marta"], ["lucia", "iker"],
     ["marta", "javier"], ["marta", "sofia"], ["marta", "daniel"],
-    ["javier", "lucia"]
+    ["javier", "carmen"]
   ]
 }

@@ -21,16 +21,24 @@ Dato de apoyo: en las ocupaciones más expuestas a la IA, las ofertas de nivel i
 
 **Hueco que ningún competidor cubre** (LinkedIn, Handshake, ADPList, redes sociales): todos obligan al joven a dar el primer paso hacia un desconocido. Ninguno organiza presentaciones cálidas, da feedback después del contacto, tiene un mecanismo de reciprocidad ni prioriza a quien no hereda red.
 
-## 2. User-persona: Nadia
+## 2. User-persona: Lucía
 
-Segmento 1: **sin red heredada** (primera generación universitaria, FP, becas).
+**Lucía · 23 años · Primeros pasos profesionales.** Segmento 1: **sin red heredada** (primera generación universitaria, FP, becas).
 
-- **Jobs:** conseguir unas primeras prácticas o empleo en su sector; entender cómo funciona ese mundo por dentro; demostrar a su familia que estudiar mereció la pena.
-- **Pains:** no conoce a nadie a quien preguntar; siente que escribir a un desconocido es molestar; ve que sus compañeros con contactos familiares entran antes.
+- **Objetivo:** acceder a su primera oportunidad profesional y construir una red propia.
+- **Frustración:** sabe que los contactos importan, pero no tiene una red heredada y le incomoda pedir ayuda a desconocidos.
+- **Comportamiento:** busca oportunidades y consejo online y observa perfiles profesionales, pero rara vez inicia conversaciones.
+- **Pensamiento:** «¿Por qué iba esta persona a responderme a mí?».
+- **Necesidad profunda:** sentirse legitimada y segura al acceder a personas que puedan ayudarla a avanzar.
+- **Insight clave:** «No me falta talento. Me falta alguien que me abra la primera puerta».
+
+Lo que Relevo cambia para ella: no tiene que escribir a nadie en frío. La red le llega a través de su relevo, que la presenta con su propia credibilidad; eso responde a su «¿por qué iba a responderme?» y a su necesidad de sentirse legitimada.
+
+Del análisis de segmentos (fase Entender), que se mantiene:
+- **Jobs:** conseguir unas primeras prácticas o empleo en su sector; entender cómo funciona ese mundo por dentro.
 - **Gains:** que alguien con credibilidad responda por ella; saber qué decir y qué no; avanzar sin sentirse en deuda.
-- **Insight clave:** «No me falta talento, me falta alguien que me abra la primera puerta, y no sé pedírselo a un desconocido».
 
-[PENDIENTE] Edad, qué estudia, sector al que quiere entrar y ciudad. Son necesarios para los datos de ejemplo de la demo.
+[EJEMPLO] Para la demo: estudia el último curso de ADE con beca y quiere entrar en marketing.
 
 Segmento secundario: emprendedora en fase inicial («si no llegas presentada, no existes»), que cubre a los emprendedores que pide el briefing. Fuera del foco de la demo.
 
@@ -38,9 +46,9 @@ Segmento secundario: emprendedora en fase inicial («si no llegas presentada, no
 
 Relevo convierte la presentación de confianza en el centro de la experiencia, y hace que quien la recibe la devuelva.
 
-- **Cadena de relevos:** cada contacto llega como una presentación de alguien que conoce a las dos personas. La red llega a Nadia a través de su relevo; ella nunca escribe en frío. Las cadenas las inician empresas o instituciones con impacto social, con prioridad de acceso para quien no tiene red heredada.
+- **Cadena de relevos:** cada contacto llega como una presentación de alguien que conoce a las dos personas. La red llega a Lucía a través de su relevo; ella nunca escribe en frío. Las cadenas las inician empresas o instituciones con impacto social, con prioridad de acceso para quien no tiene red heredada.
 - **Regla de cinco presentaciones:** quien recibe cinco presentaciones pasa el relevo y presenta a la siguiente persona. Es el motor de crecimiento de la red (reciprocidad), y permite avanzar sin sentirse en deuda. [PENDIENTE] ¿Cinco es el número correcto o depende del segmento?
-- **Senior relativo:** [PROPUESTA] el senior no tiene que ser alguien con mucha experiencia, sino alguien que va solo un paso por delante. Lo sugiere el insight «consejo de alguien solo un paso por delante». Nadia, tras sus cinco presentaciones, ya es senior relativa para quien viene detrás. Confirmar esta definición.
+- **Senior relativo:** [PROPUESTA] el senior no tiene que ser alguien con mucha experiencia, sino alguien que va solo un paso por delante. Lo sugiere el insight «consejo de alguien solo un paso por delante». Lucía, tras sus cinco presentaciones, ya es senior relativa para quien viene detrás. Confirmar esta definición.
 
 [PENDIENTE] Qué institución inicia las primeras cadenas: Esade, el patrocinador u otra.
 
@@ -49,19 +57,19 @@ Relevo convierte la presentación de confianza en el centro de la experiencia, y
 Formato: el usuario hace → el sistema hace → resultado. [PROPUESTA] Los tres flujos son diseño nuestro a partir de las oportunidades de la fase Entender.
 
 ### 4.1 Recibir una presentación
-- **El usuario hace:** Nadia indica qué busca (sector, tipo de primer paso). Su relevo, la persona que la presenta, ve una posible conexión.
-- **El sistema hace:** el Conector propone a quién presentar a Nadia dentro de la cadena. El Preparador redacta la presentación y una ficha para que Nadia sepa con quién va a hablar y qué preguntar.
-- **Resultado:** el relevo revisa la propuesta y la aprueba, edita o descarta. Solo si la aprueba se envía. Nadia recibe la presentación sin haber pedido nada.
+- **El usuario hace:** Lucía indica qué busca (sector, tipo de primer paso). Su relevo, la persona que la presenta, ve una posible conexión.
+- **El sistema hace:** el Conector propone a quién presentar a Lucía dentro de la cadena. El Preparador redacta la presentación y una ficha para que Lucía sepa con quién va a hablar y qué preguntar.
+- **Resultado:** el relevo revisa la propuesta y la aprueba, edita o descarta. Solo si la aprueba se envía. Lucía recibe la presentación sin haber pedido nada.
 
 ### 4.2 El café con feedback
-- **El usuario hace:** Nadia tiene la conversación con la persona senior. Si las dos dan su consentimiento, se graba el audio; si no, Nadia escribe unas notas.
+- **El usuario hace:** Lucía tiene la conversación con la persona senior. Si las dos dan su consentimiento, se graba el audio; si no, Lucía escribe unas notas.
 - **El sistema hace:** el Espejo genera feedback concreto sobre la conversación: qué salió bien, qué mejorar y evidencias de skills.
-- **Resultado:** la persona senior revisa y corrige el feedback antes de que llegue a Nadia. Las evidencias aprobadas se suman a la huella de Nadia.
+- **Resultado:** la persona senior revisa y corrige el feedback antes de que llegue a Lucía. Las evidencias aprobadas se suman a la huella de Lucía.
 
 ### 4.3 Pasar el relevo
-- **El usuario hace:** Nadia llega a cinco presentaciones recibidas.
+- **El usuario hace:** Lucía llega a cinco presentaciones recibidas.
 - **El sistema hace:** Relevo le avisa de que ya puede pasar el relevo, y el Conector le propone a alguien que va un paso por detrás.
-- **Resultado:** Nadia decide si presenta y a quién. La cadena crece.
+- **Resultado:** Lucía decide si presenta y a quién. La cadena crece.
 
 ## 5. Agentes del producto
 
@@ -85,7 +93,7 @@ Prepara la presentación y a las dos personas para la conversación.
 
 ### 5.2 Espejo
 Convierte cada conversación en aprendizaje.
-- **Entrada:** transcripción del audio (solo con consentimiento de las dos personas) o notas de Nadia.
+- **Entrada:** transcripción del audio (solo con consentimiento de las dos personas) o notas de Lucía.
 - **Salida:**
   ```json
   {
@@ -95,7 +103,7 @@ Convierte cada conversación en aprendizaje.
     "siguiente_paso": "string"
   }
   ```
-- **Aprueba:** la persona senior, que corrige el feedback antes de que llegue a Nadia.
+- **Aprueba:** la persona senior, que corrige el feedback antes de que llegue a Lucía.
 - **Nunca:** puntuar a la persona ni dar una nota; procesar audio sin consentimiento; conservar el audio después de transcribirlo.
 
 ### 5.3 Conector
@@ -142,10 +150,10 @@ Huella de evidencias: cada skill se respalda con evidencias concretas de convers
 
 ## 9. Criterios de éxito de la demo
 
-- [ ] [PROPUESTA] Nadia recibe una presentación sin haber escrito a nadie, y se ve el paso de aprobación del relevo.
-- [ ] [PROPUESTA] El Espejo genera feedback real de un café de ejemplo, y la persona senior lo corrige antes de que llegue a Nadia.
+- [ ] [PROPUESTA] Lucía recibe una presentación sin haber escrito a nadie, y se ve el paso de aprobación del relevo.
+- [ ] [PROPUESTA] El Espejo genera feedback real de un café de ejemplo, y la persona senior lo corrige antes de que llegue a Lucía.
 - [ ] [PROPUESTA] Se ve la huella de evidencias, sin ninguna puntuación.
-- [ ] [PROPUESTA] Nadia llega a cinco presentaciones y pasa el relevo.
+- [ ] [PROPUESTA] Lucía llega a cinco presentaciones y pasa el relevo.
 - [ ] La demo funciona aunque el backend esté caído (datos simulados).
 
 ## Preguntas abiertas

@@ -4,7 +4,7 @@ import Avatar from "../componentes/Avatar.jsx";
 import ListaEditable from "../componentes/ListaEditable.jsx";
 import Titulo from "../componentes/Titulo.jsx";
 
-// Flujo común a «Presentar a Nadia» (presenta Marta) y «Pasar el relevo» (presenta Nadia).
+// Flujo común a «Presentar a Lucía» (presenta Marta) y «Pasar el relevo» (presenta Lucía).
 function Busqueda({ junior, presentador, buscaInicial, notaBusca, onPropuestas }) {
   const JUNIOR = junior.nombre;
   const [busca, setBusca] = useState(buscaInicial);

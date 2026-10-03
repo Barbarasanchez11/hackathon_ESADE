@@ -3,23 +3,23 @@ import Titulo from "./Titulo.jsx";
 // El proceso completo, paso a paso: quién hace qué y dónde propone la IA y decide una persona.
 const ETAPAS = [
   {
-    fase: "Presentar a Nadia",
+    fase: "Presentar a Lucía",
     titulo: "Relevo busca en la red de Marta",
-    texto: "El Conector propone personas que Marta ya conoce y que encajan con lo que busca Nadia.",
+    texto: "El Conector propone personas que Marta ya conoce y que encajan con lo que busca Lucía.",
     ia: "Conector",
     persona: "Marta elige a quién presentar",
   },
   {
-    fase: "Presentar a Nadia",
-    titulo: "Marta presenta a Nadia y a Javier",
-    texto: "El Preparador redacta el mensaje y una ficha para cada uno. Nadia no escribe a nadie.",
+    fase: "Presentar a Lucía",
+    titulo: "Marta presenta a Lucía y a Javier",
+    texto: "El Preparador redacta el mensaje y una ficha para cada uno. Lucía no escribe a nadie.",
     ia: "Preparador",
     persona: "Marta revisa, edita y aprueba",
   },
   {
     fase: "El café",
-    titulo: "Nadia y Javier toman un café",
-    texto: "Si los dos dan su consentimiento, se usa la transcripción; si no, las notas de Nadia.",
+    titulo: "Lucía y Javier toman un café",
+    texto: "Si los dos dan su consentimiento, se usa la transcripción; si no, las notas de Lucía.",
     persona: "Los dos dan su consentimiento",
   },
   {
@@ -31,15 +31,15 @@ const ETAPAS = [
   },
   {
     fase: "El café",
-    titulo: "Las evidencias entran en la huella de Nadia",
-    texto: "Solo lo que Javier ha confirmado. Es la quinta presentación de Nadia: completa su cadena.",
+    titulo: "Las evidencias entran en la huella de Lucía",
+    texto: "Solo lo que Javier ha confirmado. Es la quinta presentación de Lucía: completa su cadena.",
   },
   {
     fase: "Pasar el relevo",
-    titulo: "Nadia pasa el relevo a Iker",
+    titulo: "Lucía pasa el relevo a Iker",
     texto: "Ahora es ella quien presenta. Relevo le propone personas de su red para Iker.",
     ia: "Conector + Preparador",
-    persona: "Nadia decide y aprueba",
+    persona: "Lucía decide y aprueba",
   },
   {
     fase: "Y sigue",
