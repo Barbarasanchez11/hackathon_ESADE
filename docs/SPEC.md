@@ -1,96 +1,155 @@
 # Relevo — Especificación
 
 > Fuente de verdad del producto. Si algo del código contradice este documento, manda este documento.
+> Base: docs/fase-entender.pdf (tendencias, competencia e insights, 3 oct 2026).
+>
+> Leyenda: lo que no lleva marca sale de la fase Entender.
+> **[PROPUESTA]** = diseño nuestro aún sin validar en equipo. **[PENDIENTE]** = falta decidir.
 
 ## 1. Problema y reto
-<!-- TODO: resumen del briefing -->
+
+La IA ha devaluado la candidatura y ha encarecido la confianza. La recomendación humana vuelve a ser la vía principal para entrar, justo cuando la Gen Z menos sabe usarla. Además, desaparecen los puestos de entrada, que era donde se aprendía y se hacía red.
+
+La demanda existe y la oferta también: la mayoría de millennials y Gen X ayudaría a alguien que empieza. Falta un puente que elimine el «pedir favores».
 
 **Tres datos clave**
-1. <!-- TODO -->
-2. <!-- TODO -->
-3. <!-- TODO -->
+1. Los candidatos con un contacto interno tienen **6,7 veces más** probabilidades de ser contratados (Clever CV, Axios, HC Mag).
+2. El **61%** de la Gen Z no construye red por miedo a molestar, a ser juzgado o a parecer poco auténtico; el 71% dice que nadie le enseñó (HC Mag / LinkedIn).
+3. En España, el **21,8%** de los jóvenes consiguió su primer empleo por contactos personales o familiares, por delante de los portales de empleo (17,8%) (Infobae).
+
+Dato de apoyo: en las ocupaciones más expuestas a la IA, las ofertas de nivel inicial bajaron del 29% al 10% entre 2021 y 2026 (Indeed Hiring Lab).
+
+**Hueco que ningún competidor cubre** (LinkedIn, Handshake, ADPList, redes sociales): todos obligan al joven a dar el primer paso hacia un desconocido. Ninguno organiza presentaciones cálidas, da feedback después del contacto, tiene un mecanismo de reciprocidad ni prioriza a quien no hereda red.
 
 ## 2. User-persona: Nadia
-Segmento: sin red profesional heredada.
-<!-- TODO: contexto, objetivos, frustraciones, qué cambia para ella con Relevo -->
+
+Segmento 1: **sin red heredada** (primera generación universitaria, FP, becas).
+
+- **Jobs:** conseguir unas primeras prácticas o empleo en su sector; entender cómo funciona ese mundo por dentro; demostrar a su familia que estudiar mereció la pena.
+- **Pains:** no conoce a nadie a quien preguntar; siente que escribir a un desconocido es molestar; ve que sus compañeros con contactos familiares entran antes.
+- **Gains:** que alguien con credibilidad responda por ella; saber qué decir y qué no; avanzar sin sentirse en deuda.
+- **Insight clave:** «No me falta talento, me falta alguien que me abra la primera puerta, y no sé pedírselo a un desconocido».
+
+[PENDIENTE] Edad, qué estudia, sector al que quiere entrar y ciudad. Son necesarios para los datos de ejemplo de la demo.
+
+Segmento secundario: emprendedora en fase inicial («si no llegas presentada, no existes»), que cubre a los emprendedores que pide el briefing. Fuera del foco de la demo.
 
 ## 3. Concepto
-- **Cadena de relevos:** <!-- TODO -->
-- **Regla de cinco presentaciones:** <!-- TODO -->
-- **Senior relativo:** <!-- TODO -->
+
+Relevo convierte la presentación de confianza en el centro de la experiencia, y hace que quien la recibe la devuelva.
+
+- **Cadena de relevos:** cada contacto llega como una presentación de alguien que conoce a las dos personas. La red llega a Nadia a través de su relevo; ella nunca escribe en frío. Las cadenas las inician empresas o instituciones con impacto social, con prioridad de acceso para quien no tiene red heredada.
+- **Regla de cinco presentaciones:** quien recibe cinco presentaciones pasa el relevo y presenta a la siguiente persona. Es el motor de crecimiento de la red (reciprocidad), y permite avanzar sin sentirse en deuda. [PENDIENTE] ¿Cinco es el número correcto o depende del segmento?
+- **Senior relativo:** [PROPUESTA] el senior no tiene que ser alguien con mucha experiencia, sino alguien que va solo un paso por delante. Lo sugiere el insight «consejo de alguien solo un paso por delante». Nadia, tras sus cinco presentaciones, ya es senior relativa para quien viene detrás. Confirmar esta definición.
+
+[PENDIENTE] Qué institución inicia las primeras cadenas: Esade, el patrocinador u otra.
 
 ## 4. Flujos de usuario
-Formato: el usuario hace → el sistema hace → resultado.
+
+Formato: el usuario hace → el sistema hace → resultado. [PROPUESTA] Los tres flujos son diseño nuestro a partir de las oportunidades de la fase Entender.
 
 ### 4.1 Recibir una presentación
-- El usuario hace: <!-- TODO -->
-- El sistema hace: <!-- TODO -->
-- Resultado: <!-- TODO -->
+- **El usuario hace:** Nadia indica qué busca (sector, tipo de primer paso). Su relevo, la persona que la presenta, ve una posible conexión.
+- **El sistema hace:** el Conector propone a quién presentar a Nadia dentro de la cadena. El Preparador redacta la presentación y una ficha para que Nadia sepa con quién va a hablar y qué preguntar.
+- **Resultado:** el relevo revisa la propuesta y la aprueba, edita o descarta. Solo si la aprueba se envía. Nadia recibe la presentación sin haber pedido nada.
 
 ### 4.2 El café con feedback
-- El usuario hace: <!-- TODO -->
-- El sistema hace: <!-- TODO -->
-- Resultado: <!-- TODO -->
+- **El usuario hace:** Nadia tiene la conversación con la persona senior. Si las dos dan su consentimiento, se graba el audio; si no, Nadia escribe unas notas.
+- **El sistema hace:** el Espejo genera feedback concreto sobre la conversación: qué salió bien, qué mejorar y evidencias de skills.
+- **Resultado:** la persona senior revisa y corrige el feedback antes de que llegue a Nadia. Las evidencias aprobadas se suman a la huella de Nadia.
 
 ### 4.3 Pasar el relevo
-- El usuario hace: <!-- TODO -->
-- El sistema hace: <!-- TODO -->
-- Resultado: <!-- TODO -->
+- **El usuario hace:** Nadia llega a cinco presentaciones recibidas.
+- **El sistema hace:** Relevo le avisa de que ya puede pasar el relevo, y el Conector le propone a alguien que va un paso por detrás.
+- **Resultado:** Nadia decide si presenta y a quién. La cadena crece.
 
 ## 5. Agentes del producto
-Para cada agente: entrada, salida (JSON), quién aprueba y qué no puede hacer nunca.
 
-### 5.1 Preparador
-- Entrada: <!-- TODO -->
-- Salida:
+Para cada agente: entrada, salida (JSON), quién aprueba y qué no puede hacer nunca. Todos siguen la skill agente-producto.
+
+Solo el Espejo está descrito en la fase Entender («feedback que la persona senior corrige»). [PROPUESTA] El papel de Preparador, Conector y Guardián lo deducimos de su nombre y de los flujos; hay que confirmarlo.
+
+### 5.1 Preparador [PROPUESTA]
+Prepara la presentación y a las dos personas para la conversación.
+- **Entrada:** perfiles de las dos personas (lo que cada una ha decidido compartir) y el motivo de la presentación.
+- **Salida:**
   ```json
-  {}
+  {
+    "mensaje_presentacion": "string",
+    "ficha_para_junior": { "sobre_la_persona": "string", "preguntas_sugeridas": ["string"], "que_evitar": ["string"] },
+    "ficha_para_senior": { "sobre_la_persona": "string", "en_que_puede_ayudar": "string" }
+  }
   ```
-- Aprueba: <!-- TODO -->
-- Nunca: <!-- TODO -->
+- **Aprueba:** el relevo, la persona que presenta, antes de enviar el mensaje.
+- **Nunca:** enviar la presentación por su cuenta; inventar datos de nadie.
 
 ### 5.2 Espejo
-- Entrada: <!-- TODO -->
-- Salida:
+Convierte cada conversación en aprendizaje.
+- **Entrada:** transcripción del audio (solo con consentimiento de las dos personas) o notas de Nadia.
+- **Salida:** [PROPUESTA]
   ```json
-  {}
+  {
+    "bien": ["string"],
+    "a_mejorar": ["string"],
+    "evidencias": [{ "skill": "string", "evidencia": "string", "cita": "string" }],
+    "siguiente_paso": "string"
+  }
   ```
-- Aprueba: <!-- TODO -->
-- Nunca: <!-- TODO -->
+- **Aprueba:** la persona senior, que corrige el feedback antes de que llegue a Nadia.
+- **Nunca:** puntuar a la persona ni dar una nota; procesar audio sin consentimiento; conservar el audio después de transcribirlo.
 
-### 5.3 Conector
-- Entrada: <!-- TODO -->
-- Salida:
+### 5.3 Conector [PROPUESTA]
+Propone quién puede presentar a quién dentro de la cadena.
+- **Entrada:** lo que busca la persona y la red de la cadena (quién conoce a quién).
+- **Salida:**
   ```json
-  {}
+  {
+    "propuestas": [{ "presentador": "id", "persona_a_presentar": "id", "motivo": "string" }]
+  }
   ```
-- Aprueba: <!-- TODO -->
-- Nunca: <!-- TODO -->
+- **Aprueba:** el presentador, que decide si hace la presentación.
+- **Nunca:** ordenar personas por valía ni mostrar porcentajes de encaje. La lista se basa en motivos, no en puntuaciones; dar prioridad a quien no tiene red heredada es una regla de acceso, no una nota.
 
-### 5.4 Guardián
-- Entrada: <!-- TODO -->
-- Salida:
+### 5.4 Guardián [PROPUESTA]
+Vigila que todo el sistema cumpla las reglas.
+- **Entrada:** cualquier salida de los otros agentes antes de mostrarla.
+- **Salida:**
   ```json
-  {}
+  { "ok": true, "problemas": [{ "tipo": "puntuacion | dato_sensible | sin_consentimiento | sin_aprobacion", "detalle": "string" }] }
   ```
-- Aprueba: <!-- TODO -->
-- Nunca: <!-- TODO -->
+- **Aprueba:** no aplica; bloquea y explica. Una persona del equipo revisa los bloqueos.
+- **Nunca:** modificar el contenido por su cuenta; dejar pasar algo sin aprobación humana.
 
 ## 6. Evaluación de skills
-Huella de evidencias: cada skill se respalda con evidencias concretas (quién, cuándo, en qué contexto). Sin ranking ni puntuación global.
-<!-- TODO: formato de una evidencia, cómo se muestra -->
+
+Huella de evidencias: cada skill se respalda con evidencias concretas de conversaciones reales (qué skill, qué pasó, quién lo confirmó y cuándo). Sin ranking ni puntuación global.
+
+[PROPUESTA] Formato de una evidencia: `{ skill, evidencia, cita, confirmada_por, fecha }`. Solo entra en la huella si la persona senior la ha confirmado. Se muestra como una lista de evidencias agrupadas por skill, nunca como nota, barra o porcentaje.
 
 ## 7. Restricciones
-- La IA nunca envía nada sin aprobación humana.
-- Consentimiento explícito para grabar o procesar audio.
-- Nada de puntuar personas para contratación.
-<!-- TODO: otras restricciones (Ley de IA, RGPD) -->
+
+- La IA nunca envía ni presenta nada sin aprobación humana.
+- Consentimiento explícito de las dos personas para grabar o procesar audio.
+- Nada de puntuar personas para contratación: ni rankings, ni notas, ni porcentajes de encaje.
+- Cada persona decide qué datos comparte en la cadena.
+- [PENDIENTE] Revisar el encaje con la Ley de IA europea y el RGPD. El uso en empleo es de alto riesgo si se evalúa a personas, así que la huella debe seguir siendo evidencia confirmada por humanos, no una evaluación automática.
 
 ## 8. Fuera de alcance (hackathon)
+
 - Autenticación real.
 - Pagos.
 - App móvil.
 
 ## 9. Criterios de éxito de la demo
-- [ ] <!-- TODO -->
+
+- [ ] [PROPUESTA] Nadia recibe una presentación sin haber escrito a nadie, y se ve el paso de aprobación del relevo.
+- [ ] [PROPUESTA] El Espejo genera feedback real de un café de ejemplo, y la persona senior lo corrige antes de que llegue a Nadia.
+- [ ] [PROPUESTA] Se ve la huella de evidencias, sin ninguna puntuación.
+- [ ] [PROPUESTA] Nadia llega a cinco presentaciones y pasa el relevo.
 - [ ] La demo funciona aunque el backend esté caído (datos simulados).
+
+## Preguntas abiertas
+- ¿Segmento 1 (impacto social) o 3 (emprendedores) para la persona principal? Este spec usa el 1.
+- ¿Cinco presentaciones es el número correcto?
+- ¿Qué institución inicia las primeras cadenas?
+- ¿Podemos hacer entrevistas rápidas en el hackathon para validar el miedo a pedir?
