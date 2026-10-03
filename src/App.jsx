@@ -112,7 +112,7 @@ export default function App() {
             </div>
             <BarraInferior pantalla={pantalla} onIr={ir} />
             {simulado && (
-              <p className="offline-pill">
+              <p className="offline-pill" role="status">
                 <span aria-hidden="true" /> Modo demo sin conexión
               </p>
             )}

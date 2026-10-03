@@ -7,6 +7,7 @@ const TIMEOUT_MS = 4000;
 
 // Huella local para cuando el backend no responde.
 const huellaSimulada = {};
+let sesionEspejoSimulada = null;
 // Quien quiera enterarse de que la app ha pasado a datos simulados (la píldora «Modo demo»).
 const oyentesModo = new Set();
 
@@ -38,6 +39,25 @@ function esErrorDelUsuario(e) {
   return [400, 403, 422].includes(e.status);
 }
 
+// Las mismas reglas fijas del Guardián que en el backend: un texto editado con una puntuación no se envía.
+const PUNTUACIONES = [
+  /\b\d+(?:[.,]\d+)?\s*(?:\/|sobre)\s*(?:5|10|100)\b/i,
+  /\b\d+(?:[.,]\d+)?\s+de\s+(?:5|10|100)\s+(?:puntos|estrellas)\b/i,
+  /\b\d+(?:[.,]\d+)?\s*%/,
+  /(?:^|[^\p{L}])(?:puntuaci(?:ó|o)n(?:es)?|rankings?|notas? (?:de|final)|calificaci(?:ó|o)n(?:es)?|nivel(?:es)? (?:alto|bajo|medio)s?)(?![\p{L}])/iu,
+];
+
+function bloquearSiPuntua(textos) {
+  for (const t of textos) {
+    for (const r of PUNTUACIONES) {
+      const m = t.match(r);
+      if (m) {
+        throw new Error(`El Guardián ha bloqueado el envío: «${m[0].trim()}». Relevo no puntúa a las personas.`);
+      }
+    }
+  }
+}
+
 function normalizar(texto) {
   return texto.replace(/["'«»“”]/g, "").replace(/\s+/g, " ").trim().toLowerCase();
 }
@@ -58,6 +78,7 @@ export async function crearEspejo(entrada) {
     const fuente = normalizar(entrada.texto);
     propuesta.evidencias = propuesta.evidencias.filter((e) => fuente.includes(normalizar(e.cita)));
     marcarSimulado();
+    sesionEspejoSimulada = { senior: entrada.senior, decidido: false };
     return { thread_id: "simulado", propuesta, simulado: true };
   }
 }
@@ -72,8 +93,19 @@ export async function decidirEspejo(threadId, decision, { simulado, junior }) {
       throw new Error("No se ha podido enviar la decisión. Comprueba la conexión y vuelve a intentarlo.");
     }
   }
-  if (decision.accion === "descartar") return { estado: "descartado", feedback: null };
-  const feedback = { ...decision.propuesta_editada, aprobado_por: decision.aprobado_por };
+  // Mismas comprobaciones que el backend: solo decide la senior del café, una vez y sin puntuaciones.
+  if (!sesionEspejoSimulada || sesionEspejoSimulada.decidido) throw new Error("No hay ninguna propuesta pendiente.");
+  if (decision.aprobado_por.trim().toLowerCase() !== sesionEspejoSimulada.senior.toLowerCase()) {
+    throw new Error("Solo la persona senior del café puede aprobar o descartar la propuesta.");
+  }
+  if (decision.accion === "descartar") {
+    sesionEspejoSimulada.decidido = true;
+    return { estado: "descartado", feedback: null };
+  }
+  const editada = decision.propuesta_editada;
+  bloquearSiPuntua([...editada.bien, ...editada.a_mejorar, ...editada.evidencias.map((e) => e.evidencia), editada.siguiente_paso]);
+  sesionEspejoSimulada.decidido = true;
+  const feedback = { ...editada, aprobado_por: decision.aprobado_por };
   const fecha = new Date().toISOString().slice(0, 10);
   const persona = junior.toLowerCase();
   huellaSimulada[persona] = [
@@ -89,7 +121,8 @@ export async function verHuella(persona, { simulado = modoSimulado } = {}) {
     try {
       return await pedir(`/huella/${encodeURIComponent(persona)}`);
     } catch {
-      // Sigue con la huella simulada.
+      // Sigue con la huella simulada, y se avisa de que la app está en modo demo.
+      marcarSimulado();
     }
   }
   const agrupada = {};
@@ -120,6 +153,7 @@ function reiniciarLocal() {
   sesionesPreparador.clear();
   eleccionesUsadas.clear();
   for (const persona of Object.keys(huellaSimulada)) delete huellaSimulada[persona];
+  sesionEspejoSimulada = null;
   modoSimulado = false;
   for (const fn of oyentesModo) fn(false);
 }
@@ -186,13 +220,15 @@ export function perfilCompartido(id) {
 }
 
 // Derecho de supresión (RGPD art. 17): la persona borra su huella.
+// Borra la copia local y siempre intenta borrar también la del servidor, aunque la app esté en modo demo:
+// la persona puede haber aprobado cafés reales antes de perder la conexión.
 export async function borrarHuella(persona) {
   delete huellaSimulada[persona.toLowerCase()];
-  if (modoSimulado) return;
   try {
     await pedir(`/huella/${encodeURIComponent(persona)}`, { method: "DELETE" });
-  } catch {
-    throw new Error("No se ha podido borrar la huella. Vuelve a intentarlo.");
+  } catch (e) {
+    if (e.status || !modoSimulado) throw new Error("No se ha podido borrar la huella en el servidor. Vuelve a intentarlo.");
+    // Sin servidor y en modo demo: solo había copia local, ya borrada.
   }
 }
 
@@ -298,6 +334,17 @@ export async function decidirPreparador(threadId, decision, { simulado }) {
   const sesion = sesionesPreparador.get(threadId);
   if (!sesion || sesion.decidido) throw new Error("No hay ninguna propuesta pendiente.");
   comprobarPresentador(decision.aprobado_por, sesion.presentador);
+  if (decision.accion === "aprobar" && decision.borrador_editado) {
+    const b = decision.borrador_editado;
+    bloquearSiPuntua([
+      b.mensaje_presentacion,
+      b.ficha_para_junior.sobre_la_persona,
+      ...b.ficha_para_junior.preguntas_sugeridas,
+      ...b.ficha_para_junior.que_evitar,
+      b.ficha_para_senior.sobre_la_persona,
+      b.ficha_para_senior.en_que_puede_ayudar,
+    ]);
+  }
   sesion.decidido = true;
   if (decision.accion === "descartar") return { estado: "descartado" };
   conexiones.add(clave(sesion.junior, sesion.persona));

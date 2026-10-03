@@ -14,7 +14,12 @@ def test_reglas_detectan_puntuaciones_y_contactos():
 
 
 def test_reglas_no_saltan_con_texto_normal():
-    assert guardian.revisar_reglas("Pasaron de 300 a 1.200 seguidores. ¿Un café de 20-30 minutos?") == []
+    assert guardian.revisar_reglas("Pasaron de 300 a 1.200 seguidores. ¿Un café de 20-30 minutos? Lleva 4 de 5 presentaciones.") == []
+
+
+def test_reglas_detectan_plurales_y_niveles():
+    tipos = [p["tipo"] for p in guardian.revisar_reglas("Sin rankings ni puntuaciones; tiene un nivel alto; 7 de 10 puntos")]
+    assert tipos.count("puntuacion") == 4
 
 
 def test_rehace_una_vez_con_la_correccion(monkeypatch):

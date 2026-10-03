@@ -4,18 +4,30 @@ import Icono from "./Icono.jsx";
 export default function Cabecera({ titulo, onVolver, onComoFunciona, tema, onCambiarTema, onReiniciar }) {
   const [menu, setMenu] = useState(false);
   const boton = useRef(null);
+  const panel = useRef(null);
 
-  // El menú se cierra con Escape y devuelve el foco al botón que lo abrió.
+  // Al abrir, el foco entra en el menú. Se cierra con Escape (devolviendo el foco), al hacer clic fuera
+  // o cuando el foco sale de él.
   useEffect(() => {
     if (!menu) return;
-    const cerrar = (e) => {
+    panel.current?.querySelector("button")?.focus();
+    const tecla = (e) => {
       if (e.key === "Escape") {
         setMenu(false);
         boton.current?.focus();
       }
     };
-    window.addEventListener("keydown", cerrar);
-    return () => window.removeEventListener("keydown", cerrar);
+    const fuera = (e) => {
+      if (!panel.current?.contains(e.target) && !boton.current?.contains(e.target)) setMenu(false);
+    };
+    window.addEventListener("keydown", tecla);
+    window.addEventListener("pointerdown", fuera);
+    window.addEventListener("focusin", fuera);
+    return () => {
+      window.removeEventListener("keydown", tecla);
+      window.removeEventListener("pointerdown", fuera);
+      window.removeEventListener("focusin", fuera);
+    };
   }, [menu]);
 
   return (
@@ -55,7 +67,7 @@ export default function Cabecera({ titulo, onVolver, onComoFunciona, tema, onCam
         </button>
       </div>
       {menu && (
-        <div id="menu-opciones" className="menu">
+        <div id="menu-opciones" className="menu" ref={panel}>
           <button
             type="button"
             onClick={() => {

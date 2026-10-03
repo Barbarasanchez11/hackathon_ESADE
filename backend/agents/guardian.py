@@ -35,9 +35,14 @@ class GuardianBloqueo(AgenteError):
 
 # Reglas fijas: no dependen del modelo y se aplican siempre, también a los textos que editan las personas.
 REGLAS = [
-    ("puntuacion", re.compile(r"\b\d+(?:[.,]\d+)?\s*(?:/|sobre|de)\s*(?:5|10|100)\b", re.I), "Parece una nota o puntuación."),
+    ("puntuacion", re.compile(r"\b\d+(?:[.,]\d+)?\s*(?:/|sobre)\s*(?:5|10|100)\b", re.I), "Parece una nota o puntuación."),
+    ("puntuacion", re.compile(r"\b\d+(?:[.,]\d+)?\s+de\s+(?:5|10|100)\s+(?:puntos|estrellas)\b", re.I), "Parece una nota o puntuación."),
     ("puntuacion", re.compile(r"\b\d+(?:[.,]\d+)?\s*%"), "Parece un porcentaje sobre una persona o su encaje."),
-    ("puntuacion", re.compile(r"\b(?:puntuaci[oó]n|ranking|nota (?:de|final)|calificaci[oó]n)\b", re.I), "Habla de puntuar o clasificar personas."),
+    (
+        "puntuacion",
+        re.compile(r"\b(?:puntuaci(?:ó|o)n(?:es)?|rankings?|notas? (?:de|final)|calificaci(?:ó|o)n(?:es)?|nivel(?:es)? (?:alto|bajo|medio)s?)\b", re.I),
+        "Habla de puntuar, clasificar o dar niveles a personas.",
+    ),
     ("dato_sensible", re.compile(r"[\w.+-]+@[\w-]+\.[\w.]+"), "Contiene un correo electrónico."),
     ("dato_sensible", re.compile(r"(?:\+34\s?)?\b[6-9]\d{2}[\s.]?\d{3}[\s.]?\d{3}\b"), "Contiene un número de teléfono."),
 ]

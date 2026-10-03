@@ -22,7 +22,9 @@ function Conversacion({ onPropuesta }) {
   const [error, setError] = useState("");
 
   const faltaConsentimiento = origen === "audio" && !(consJunior && consSenior);
-  const bloqueado = faltaConsentimiento || cargando || !texto.trim();
+  const sinTexto = !texto.trim();
+  const bloqueado = faltaConsentimiento || cargando || sinTexto;
+  const motivo = faltaConsentimiento ? "Hace falta el sí de las dos personas." : sinTexto ? "Escribe las notas del café para continuar." : "";
 
   // Al cambiar de origen cambia el texto: las notas nunca arrastran la transcripción del audio.
   function cambiarOrigen(nuevo) {
@@ -70,7 +72,8 @@ function Conversacion({ onPropuesta }) {
         <p>Solo preparamos una propuesta de feedback si las dos personas dicen que sí.</p>
       </div>
 
-      <fieldset className="segmentado" aria-label="¿De dónde sale la conversación?">
+      <fieldset className="segmentado">
+        <legend className="solo-lector">¿De dónde sale la conversación?</legend>
         <label>
           <input type="radio" name="origen" checked={origen === "audio"} onChange={() => cambiarOrigen("audio")} />
           Transcripción del audio
@@ -107,6 +110,10 @@ function Conversacion({ onPropuesta }) {
         </>
       )}
 
+      {/* Sin el sí de las dos personas no hay transcripción que mostrar. */}
+      {origen === "audio" && faltaConsentimiento ? (
+        <p className="helper">La transcripción aparecerá cuando las dos personas den su consentimiento.</p>
+      ) : (
       <details className="prep-card" open={origen === "notas"}>
         <summary>
           <span className="mini-person">
@@ -119,18 +126,19 @@ function Conversacion({ onPropuesta }) {
           <textarea id="texto" value={texto} onChange={(e) => setTexto(e.target.value)} />
         </div>
       </details>
+      )}
 
       {error && (
         <p role="alert" className="error">
           {error}
         </p>
       )}
-      <Boton icono="chispa" bloqueado={bloqueado} aria-describedby={faltaConsentimiento ? "motivo-cafe" : undefined} onClick={generar}>
+      <Boton icono="chispa" bloqueado={bloqueado} aria-describedby={motivo ? "motivo-cafe" : undefined} onClick={generar}>
         {cargando ? "Generando propuesta…" : "Generar propuesta"}
       </Boton>
-      {faltaConsentimiento && (
+      {motivo && (
         <p id="motivo-cafe" className="helper">
-          Hace falta el sí de las dos personas.
+          {motivo}
         </p>
       )}
       <p className="solo-lector" aria-live="polite">
@@ -233,7 +241,7 @@ function Revision({ sesion, onDecision }) {
         </p>
       )}
       <Boton icono="enviar" bloqueado={enviando} onClick={() => decidir("aprobar")}>
-        {enviando ? "Enviando…" : `Aprobar y enviar a ${JUNIOR.nombre}`}
+        {enviando ? "Enviando…" : sesion.simulado ? "Aprobar (ejemplo: no se envía)" : `Aprobar y enviar a ${JUNIOR.nombre}`}
       </Boton>
       <p className="solo-lector" aria-live="polite">
         {enviando ? "Enviando la decisión." : ""}
@@ -248,6 +256,7 @@ function Revision({ sesion, onDecision }) {
 export default function Cafe({ onEnCurso, onCompletado, onIr }) {
   const [paso, setPaso] = useState("cafe");
   const [sesion, setSesion] = useState(null);
+  const [simuladoFinal, setSimuladoFinal] = useState(false);
 
   useEffect(() => {
     onEnCurso?.(paso === "revision");
@@ -260,6 +269,7 @@ export default function Cafe({ onEnCurso, onCompletado, onIr }) {
         onDecision={(r) => {
           if (r.estado === "aprobado") onCompletado?.();
           setPaso(r.estado === "aprobado" ? "aprobado" : "descartado");
+          setSimuladoFinal(sesion.simulado);
         }}
       />
     );
@@ -272,11 +282,13 @@ export default function Cafe({ onEnCurso, onCompletado, onIr }) {
           <Icono nombre={aprobado ? "check" : "x"} tamano={34} />
         </div>
         <div className="title-block centered">
-          <Titulo>{aprobado ? `Enviado a ${JUNIOR.nombre}` : "Propuesta descartada"}</Titulo>
+          <Titulo>{!aprobado ? "Propuesta descartada" : simuladoFinal ? "Propuesta de ejemplo aprobada" : `Enviado a ${JUNIOR.nombre}`}</Titulo>
           <p>
-            {aprobado
-              ? `Lo que ${SENIOR.nombre} ha confirmado ya está en la huella de ${JUNIOR.nombre}.`
-              : `${JUNIOR.nombre} no ha recibido nada.`}
+            {!aprobado
+              ? `${JUNIOR.nombre} no ha recibido nada.`
+              : simuladoFinal
+                ? "Modo demo sin conexión: no se ha enviado nada. Las evidencias solo se guardan en este dispositivo."
+                : `Lo que ${SENIOR.nombre} ha confirmado ya está en la huella de ${JUNIOR.nombre}.`}
           </p>
         </div>
         {aprobado && (

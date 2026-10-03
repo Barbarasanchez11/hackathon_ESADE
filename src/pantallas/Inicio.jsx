@@ -8,19 +8,20 @@ import Titulo from "../componentes/Titulo.jsx";
 // Inicio de Lucía: su cadena y lo siguiente que le toca. Lo destacado cambia según avanza la demo.
 export default function Inicio({ hechos, onIr }) {
   const [lucia, setLucia] = useState(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     let activo = true;
     verPersona("lucia").then(
       (p) => activo && setLucia(p),
-      () => {},
+      (e) => activo && setError(e.message),
     );
     return () => {
       activo = false;
     };
   }, [hechos]);
 
-  const recibidas = lucia?.presentaciones_recibidas ?? 4;
+  const recibidas = lucia?.presentaciones_recibidas;
   const completa = lucia?.puede_pasar_relevo;
 
   let destacado;
@@ -62,20 +63,32 @@ export default function Inicio({ hechos, onIr }) {
             Hola, Lucía <span aria-hidden="true">👋</span>
           </Titulo>
           <p>
-            {completa
-              ? "Has completado tu cadena. Ya puedes pasar el relevo."
-              : recibidas === 4
-                ? "Una puerta más y completas tu cadena."
-                : `Llevas ${recibidas} presentaciones.`}
+            {!lucia
+              ? "Tu red, sin pedir favores."
+              : completa
+                ? "Has completado tu cadena. Ya puedes pasar el relevo."
+                : recibidas === 4
+                  ? "Una puerta más y completas tu cadena."
+                  : `Llevas ${recibidas} presentaciones.`}
           </p>
         </div>
         <Avatar id="lucia" nombre="Lucía" />
       </section>
 
-      <CadenaProgreso nombre="Lucía" recibidas={recibidas} />
+      {error ? (
+        <p role="alert" className="error">
+          No se ha podido cargar tu cadena: {error}
+        </p>
+      ) : lucia ? (
+        <CadenaProgreso nombre="Lucía" recibidas={recibidas} />
+      ) : (
+        <p className="cargando" role="status">
+          Cargando tu cadena…
+        </p>
+      )}
 
       <button type="button" className="feature-card" onClick={() => onIr(destacado.ir)}>
-        <span className="sticker">{destacado.etiqueta.toUpperCase()}</span>
+        <span className="sticker">{destacado.etiqueta}</span>
         <span className="avatar-pair">
           <Avatar id={destacado.quien.id} nombre={destacado.quien.nombre} tamano="lg" />
         </span>
@@ -98,8 +111,8 @@ export default function Inicio({ hechos, onIr }) {
             ☕
           </span>
           <span>
-            <span className="coffee-titulo">Lucía + Javier</span>
-            <span className="coffee-detalle">25 minutos · por videollamada</span>
+            <span className="coffee-titulo">Ir al café con Javier</span>
+            <span className="coffee-detalle">Lucía + Javier, cuando Marta os presente</span>
           </span>
           <span className="round-arrow" aria-hidden="true">
             <Icono nombre="flecha" tamano={17} />

@@ -117,3 +117,13 @@ def test_la_persona_puede_borrar_su_huella(cliente):
     assert cliente.get("/api/huella/Lucía").json() != {}
     assert cliente.delete("/api/huella/Lucía").json() == {"ok": True}
     assert cliente.get("/api/huella/Lucía").json() == {}
+    # Tampoco quedan datos en los hilos del Espejo, ni se puede aprobar uno pendiente.
+    assert list(espejo.grafo.get_state_history({"configurable": {"thread_id": thread_id}})) == []
+
+
+def test_borrar_la_huella_cancela_lo_pendiente(cliente):
+    thread_id = cliente.post("/api/espejo", json=ENTRADA).json()["thread_id"]
+    cliente.delete("/api/huella/Lucía")
+    r = cliente.post(f"/api/espejo/{thread_id}/decision", json={"accion": "aprobar", "aprobado_por": "Javier"})
+    assert r.status_code == 404
+    assert cliente.get("/api/huella/Lucía").json() == {}

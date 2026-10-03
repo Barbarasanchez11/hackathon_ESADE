@@ -14,6 +14,7 @@
   --violet: #7c3aed;
   --violet-soft: #a98bff;
   --lime: #c6f432;
+  --lima-borde: #c6f432;
   --pink: #ff5fa2;
   --cyan: #22d3ee;
   --ink: #140d24;
@@ -37,6 +38,7 @@
   --violet: #6d28d9;
   --violet-soft: #6d28d9;
   --acento-texto: #3f5a00;
+  --lima-borde: #4f7000;
   --cian-texto: #0e6a80;
   --rosa-texto: #b0125b;
   --error: #b3261e;
@@ -157,6 +159,8 @@ p {
 .screen-scroll {
   height: 100%;
   overflow-y: auto;
+  /* Que el elemento con foco no quede tapado por la cabecera ni por la barra inferior. */
+  scroll-padding: 84px 0 104px;
   scrollbar-width: none;
 }
 
@@ -622,21 +626,31 @@ p {
 
 .dots {
   display: flex;
-  gap: 6px;
+  gap: 2px;
 }
 
+/* El punto se ve pequeño, pero el objetivo táctil es de 24×24 px. */
 .dots button {
-  width: 10px;
-  height: 10px;
+  width: 24px;
+  height: 24px;
   border: 0;
   padding: 0;
-  border-radius: 99px;
-  background: var(--surface-3);
+  background: transparent;
   cursor: pointer;
+  display: grid;
+  place-items: center;
 }
 
-.dots button[aria-current="true"] {
-  width: 26px;
+.dots button::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 99px;
+  background: var(--surface-3);
+}
+
+.dots button[aria-current="true"]::before {
+  width: 22px;
   background: var(--pink);
 }
 
@@ -710,6 +724,7 @@ p {
   color: #240d1a;
   font-size: 12px;
   font-weight: 900;
+  text-transform: uppercase;
 }
 
 .avatar-pair {
@@ -835,6 +850,7 @@ p {
   color: #240d1a;
   font-size: 12px;
   font-weight: 900;
+  text-transform: uppercase;
   transform: rotate(-2deg);
   margin-bottom: 16px;
 }
@@ -1022,7 +1038,7 @@ p {
 }
 
 .person-card.elegida {
-  border: 2px solid var(--lime);
+  border: 3px solid var(--lima-borde);
   box-shadow: 8px 8px 0 color-mix(in srgb, var(--lime) 35%, var(--surface-2));
 }
 
@@ -1075,7 +1091,7 @@ p {
 .elegir input {
   width: 22px;
   height: 22px;
-  accent-color: var(--lime);
+  accent-color: var(--lima-borde);
 }
 
 .swipe-controls {
@@ -1283,11 +1299,12 @@ p {
 
 .toggle {
   flex: 0 0 auto;
-  width: 48px;
-  height: 28px;
+  width: 50px;
+  height: 30px;
   border-radius: 99px;
   background: var(--surface-3);
-  padding: 3px;
+  border: 2px solid var(--muted);
+  padding: 2px;
   transition: background 0.2s;
 }
 
@@ -1296,13 +1313,14 @@ p {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: white;
+  background: var(--muted);
   transition: transform 0.2s;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
 }
 
 .toggle.on {
   background: var(--lime);
+  border-color: var(--lima-borde);
 }
 
 .toggle.on > span {

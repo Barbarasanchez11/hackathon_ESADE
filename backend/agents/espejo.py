@@ -62,6 +62,8 @@ class Estado(TypedDict, total=False):
 
 # Huella de evidencias en memoria: persona -> lista de evidencias confirmadas.
 HUELLA: dict[str, list[dict]] = {}
+# Hilos del Espejo de cada persona, para poder borrarlos con su huella (RGPD art. 17).
+HILOS: dict[str, list[str]] = {}
 
 def consentimiento_ok(entrada: EspejoEntrada) -> bool:
     if entrada.origen == "notas":
@@ -150,7 +152,16 @@ def iniciar(entrada: EspejoEntrada) -> tuple[str, dict]:
     thread_id = red.nuevo_hilo()
     config = {"configurable": {"thread_id": thread_id}}
     grafo.invoke({"junior": entrada.junior, "senior": entrada.senior, "propuesta": propuesta, "estado": "pendiente"}, config)
+    HILOS.setdefault(entrada.junior.lower(), []).append(thread_id)
     return thread_id, propuesta, avisos
+
+
+def borrar_datos(persona: str) -> None:
+    """Derecho de supresión: la huella y todo lo que guardan los hilos del Espejo, también los pendientes."""
+    clave = persona.lower()
+    HUELLA.pop(clave, None)
+    for thread_id in HILOS.pop(clave, []):
+        grafo.checkpointer.delete_thread(thread_id)
 
 
 def decidir(thread_id: str, decision: Decision) -> dict:

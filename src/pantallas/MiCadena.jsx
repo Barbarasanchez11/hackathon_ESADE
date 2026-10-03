@@ -34,12 +34,13 @@ export default function MiCadena({ onEnCurso, onCompletado, onIr }) {
   }, []);
 
   if (junior) {
-    const { intereses = [], rol } = junior.comparte;
+    const { intereses = [], rol = "" } = junior.comparte;
+    const partes = [rol && `${rol}.`, intereses.length > 0 && `Le interesan: ${intereses.join(", ")}.`].filter(Boolean);
     return (
       <Presentar
         junior={{ id: junior.id, nombre: junior.nombre }}
         presentador={LUCIA}
-        buscaInicial={`${rol}. Le interesan: ${intereses.join(", ")}.`}
+        buscaInicial={partes.join(" ")}
         notaBusca={`Lo hemos rellenado con lo que ${junior.nombre} comparte en su perfil. Cámbialo si sabes qué busca.`}
         onEnCurso={onEnCurso}
         onEnviada={onCompletado}
@@ -68,7 +69,11 @@ export default function MiCadena({ onEnCurso, onCompletado, onIr }) {
   if (!lucia) {
     return (
       <main className="screen">
-        <p className="cargando" aria-live="polite">
+        <div className="title-block">
+          <p className="kicker">Mi cadena</p>
+          <Titulo>Tu cadena</Titulo>
+        </div>
+        <p className="cargando" role="status">
           Cargando tu cadena…
         </p>
       </main>

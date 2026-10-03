@@ -35,7 +35,7 @@ function Busqueda({ junior, presentador, buscaInicial, notaBusca, onPropuestas, 
 
   return (
     <main className="screen">
-      <p className="step-tag">VISTA DE {presentador.nombre.toUpperCase()} · TU TURNO</p>
+      <p className="step-tag">Vista de {presentador.nombre} · tu turno</p>
       <div className="title-block">
         <Titulo>¿A quién le abres la puerta?</Titulo>
         <p>
@@ -80,7 +80,7 @@ function Busqueda({ junior, presentador, buscaInicial, notaBusca, onPropuestas, 
         {cargando ? "Buscando en tu red, espera un momento." : ""}
       </p>
       <Boton variante="ghost" onClick={onSalir}>
-        Ahora no
+        Dejarlo para luego
       </Boton>
     </main>
   );
@@ -159,6 +159,7 @@ function Eleccion({ junior, sesion, onElegida, onNinguna }) {
               </button>
               <span aria-live="polite">
                 {indice + 1} / {total}
+                <span className="solo-lector">: {p.persona_nombre}</span>
               </span>
               <button type="button" aria-label="Propuesta siguiente" onClick={() => setIndice((indice + 1) % total)}>
                 <Icono nombre="flecha" tamano={18} />
@@ -168,6 +169,11 @@ function Eleccion({ junior, sesion, onElegida, onNinguna }) {
         </div>
       )}
 
+      {eleccion && (
+        <p className="helper" role="status">
+          Has elegido a <b>{sesion.propuestas.find((x) => x.persona_a_presentar === eleccion)?.persona_nombre}</b>.
+        </p>
+      )}
       {error && (
         <p role="alert" className="error">
           {error}
@@ -180,7 +186,11 @@ function Eleccion({ junior, sesion, onElegida, onNinguna }) {
           aria-describedby={!eleccion ? "motivo-eleccion" : undefined}
           onClick={() => decidir(eleccion)}
         >
-          {enviando ? "Preparando…" : "Preparar presentación"}
+          {enviando
+            ? "Preparando…"
+            : eleccion
+              ? `Preparar presentación con ${sesion.propuestas.find((x) => x.persona_a_presentar === eleccion)?.persona_nombre}`
+              : "Preparar presentación"}
         </Boton>
       )}
       {total > 0 && !eleccion && (

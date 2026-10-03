@@ -17,7 +17,7 @@ export default function AvisosGuardian({ avisos }) {
       <p className="guardian">
         <Icono nombre="escudo" tamano={18} />
         <span>
-          <b>Revisado</b> por el Guardián: sin datos inventados ni puntuaciones
+          <b>Revisado</b> por el Guardián al generarse: no ha encontrado problemas. Si lo editas, revísalo tú.
         </span>
       </p>
     );

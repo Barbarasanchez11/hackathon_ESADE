@@ -13,7 +13,7 @@ const ETAPAS = [
   },
   {
     titulo: "Marta presenta a Lucía y a Javier",
-    texto: "El Preparador redacta el mensaje y una ficha para cada uno. Lucía no escribe a nadie.",
+    texto: "El Preparador redacta el mensaje y una ficha para cada uno. Lucía no escribe a nadie. Es su quinta presentación: completa su cadena.",
     ia: "Preparador",
     guardian: true,
     decide: "Marta revisa, edita y aprueba",
@@ -32,7 +32,7 @@ const ETAPAS = [
   },
   {
     titulo: "Las evidencias entran en su huella",
-    texto: "Solo lo que Javier ha confirmado. Es la quinta presentación de Lucía: completa su cadena.",
+    texto: "Solo lo que Javier ha confirmado. Son evidencias, no notas.",
   },
   {
     titulo: "Lucía pasa el relevo a Iker",
@@ -53,7 +53,10 @@ export default function ComoFunciona({ onIr }) {
       <div className="title-block">
         <p className="kicker">Sin cajas negras</p>
         <Titulo>Cómo funciona</Titulo>
-        <p>La IA propone. Una persona decide. Siempre. Y el Guardián revisa cada propuesta para que no invente datos ni puntúe a nadie.</p>
+        <p>
+          La IA propone. Una persona decide. Siempre. Y el Guardián revisa cada propuesta para que no invente datos ni puntúe a
+          nadie. En modo demo sin conexión se usan propuestas de ejemplo y no hay revisión.
+        </p>
       </div>
       <ol className="timeline">
         {ETAPAS.map((e, i) => (

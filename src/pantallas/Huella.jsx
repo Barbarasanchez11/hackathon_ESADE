@@ -14,12 +14,13 @@ function fechaLegible(iso) {
 export default function Huella({ onIr }) {
   const [huella, setHuella] = useState(null);
   const [error, setError] = useState("");
+  const [errorCarga, setErrorCarga] = useState("");
 
   useEffect(() => {
     let activo = true;
     verHuella(LUCIA).then(
       (h) => activo && setHuella(h),
-      () => activo && setHuella({}),
+      () => activo && setErrorCarga("No se ha podido cargar tu huella. Vuelve a intentarlo en un momento."),
     );
     return () => {
       activo = false;
@@ -48,8 +49,12 @@ export default function Huella({ onIr }) {
         <p>Evidencias reales, confirmadas por las personas con las que hablaste. Sin notas ni rankings.</p>
       </div>
 
-      {huella === null ? (
-        <p className="cargando" aria-live="polite">
+      {errorCarga ? (
+        <p role="alert" className="error">
+          {errorCarga}
+        </p>
+      ) : huella === null ? (
+        <p className="cargando" role="status">
           Cargando tu huella…
         </p>
       ) : skills.length === 0 ? (
@@ -71,7 +76,7 @@ export default function Huella({ onIr }) {
                   <p className="confirmado">
                     <Avatar id={e.confirmada_por.toLowerCase()} nombre={e.confirmada_por} tamano="sm" />
                     <span>
-                      Confirmado por <b>{e.confirmada_por}</b>
+                      Propuesta por la IA, confirmada por <b>{e.confirmada_por}</b>
                       <br />
                       {fechaLegible(e.fecha)}
                     </span>

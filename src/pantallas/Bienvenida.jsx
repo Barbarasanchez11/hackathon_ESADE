@@ -32,7 +32,10 @@ export default function Bienvenida({ onEmpezar, tema, onCambiarTema }) {
         <p>No te falta talento. Te falta alguien que te abra la primera puerta.</p>
       </div>
       <section className="carousel" aria-roledescription="carrusel" aria-label="Cómo funciona Relevo">
-        <article key={t.n} className={`intro-card intro-${t.color}`} aria-live="polite">
+        <p className="solo-lector" aria-live="polite">
+          Tarjeta {i + 1} de 3: {t.titulo}
+        </p>
+        <article key={t.n} className={`intro-card intro-${t.color}`}>
           <span className="card-number">
             {t.n} <span className="solo-lector">de 03</span>
           </span>

@@ -58,7 +58,7 @@ def ver_huella(persona: str):
 @app.delete("/api/huella/{persona}")
 def borrar_huella(persona: str):
     """Derecho de supresión (RGPD art. 17): la persona puede borrar su huella entera."""
-    espejo.HUELLA.pop(persona.lower(), None)
+    espejo.borrar_datos(persona)
     return {"ok": True}
 
 
@@ -109,5 +109,6 @@ def reiniciar_demo():
         raise HTTPException(404, "Not Found")
     red.reiniciar()
     espejo.HUELLA.clear()
+    espejo.HILOS.clear()
     preparador._USADAS.clear()
     return {"ok": True}
