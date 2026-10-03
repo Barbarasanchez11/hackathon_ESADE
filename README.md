@@ -29,7 +29,7 @@ Proyecto del hackathon de ESADE. La especificación está en [`docs/SPEC.md`](do
 4. Tests del backend: `cd backend && .venv/bin/python -m pytest`
 
 ## Despliegue
-- **Solo frontend (versión demo pública, sin backend):** en Vercel, importa el repositorio y añade la variable `VITE_SOLO_DEMO=1`. La app arranca con los datos de ejemplo y lo indica en pantalla.
+- **Solo frontend (versión demo pública, sin backend):** en Vercel, importa el repositorio sin más: una build de producción sin `VITE_API_URL` arranca en modo demo (también se puede forzar con `VITE_SOLO_DEMO=1`). La app arranca con los datos de ejemplo y lo indica en pantalla.
 - **Backend en Render:** *New → Blueprint* con este repositorio (usa `render.yaml`). En el panel, añade `GROQ_API_KEY` y `RELEVO_ORIGENES` (la URL de Vercel).
 - **Frontend en Vercel:** importa el repositorio (Vite, raíz del proyecto) y añade la variable `VITE_API_URL` con la URL de Render.
 

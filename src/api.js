@@ -7,7 +7,10 @@ const API = `${import.meta.env.VITE_API_URL ?? "http://localhost:8000"}/api`;
 
 // Versión pública sin backend (VITE_SOLO_DEMO=1): arranca directamente con los datos de ejemplo,
 // sin intentar llamadas que fallarían.
-export const SOLO_DEMO = import.meta.env.VITE_SOLO_DEMO === "1";
+// También si es una build de producción sin backend configurado: así una publicación en Vercel nunca
+// intenta llamar a localhost.
+export const SOLO_DEMO =
+  import.meta.env.VITE_SOLO_DEMO === "1" || (import.meta.env.PROD && !import.meta.env.VITE_API_URL);
 
 // Cómo explicar en pantalla por qué se ven datos de ejemplo.
 export const MOTIVO_DEMO = SOLO_DEMO ? "versión demo con datos de ejemplo" : "no se ha podido conectar con Relevo";
