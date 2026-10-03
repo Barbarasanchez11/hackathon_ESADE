@@ -1210,6 +1210,7 @@ p {
 
 .coffee-visual {
   height: 170px;
+  margin-bottom: 18px;
   display: grid;
   place-items: center;
   position: relative;
@@ -1516,8 +1517,9 @@ p {
 
 .skill-sticker .avatar {
   color: var(--ink);
+  background: rgba(255, 255, 255, 0.6);
   border-color: var(--ink);
-  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.35);
+  box-shadow: none;
 }
 
 .vacio {
