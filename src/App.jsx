@@ -50,12 +50,13 @@ export default function App() {
     setPantalla(destino);
   }
 
+  // Reiniciar vuelve al principio de todo: la bienvenida con «Empezar», como si fuera la primera vez.
   async function reiniciar() {
     if (!window.confirm("¿Reiniciar la demo? Lucía vuelve a 4 presentaciones y se borra lo que hayas hecho.")) return;
     await reiniciarDemo();
     setEnCurso(false);
     setHechos(new Set());
-    setPantalla("inicio");
+    setPantalla("bienvenida");
     setVersion((v) => v + 1);
   }
 

@@ -35,8 +35,8 @@
   --text: #171024;
   --muted: #5c5468;
   --line: rgba(41, 25, 63, 0.18);
-  --violet: #6d28d9;
-  --violet-soft: #6d28d9;
+  --violet: #7c3aed;
+  --violet-soft: #7c3aed;
   --acento-texto: #3f5a00;
   --lima-borde: #4f7000;
   --cian-texto: #0e6a80;
@@ -44,6 +44,63 @@
   --error: #b3261e;
   --shadow: 0 18px 45px rgba(61, 38, 97, 0.14);
   --fondo-pagina: radial-gradient(circle at 50% 0, #e7d8ff 0, #faf8ff 54%);
+}
+
+/* Tema claro con la misma paleta que el oscuro: donde el lima o el rosa no se leerían como texto sobre
+   blanco, pasan a ser fondo resaltado (estilo marcador) con texto en tinta, en vez de cambiar de color. */
+.app-shell.light .kicker,
+.app-shell.light .progress-label b {
+  display: inline-block;
+  width: fit-content;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--lime);
+  color: var(--ink);
+}
+
+.app-shell.light .hero-copy h1 em {
+  color: var(--ink);
+  background: var(--pink);
+  padding: 0 6px;
+  border-radius: 8px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.app-shell.light .bottom-nav button[aria-current="page"] {
+  color: var(--ink);
+  background: var(--lime);
+}
+
+.app-shell.light .guardian {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--lime) 28%, var(--surface));
+  border-color: var(--lima-borde);
+}
+
+.app-shell.light .avatar-lima {
+  color: var(--ink);
+  background: var(--lime);
+}
+
+.app-shell.light .avatar-rosa {
+  color: var(--ink);
+  background: var(--pink);
+}
+
+.app-shell.light .avatar-cian {
+  color: var(--ink);
+  background: var(--cyan);
+}
+
+.app-shell.light .avatar-violeta {
+  color: #ffffff;
+  background: var(--violet);
+}
+
+.app-shell.light .avatar {
+  box-shadow: none;
+  border-color: var(--ink);
 }
 
 * {
