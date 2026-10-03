@@ -212,3 +212,48 @@ h2:focus {
   outline: 3px solid var(--foco);
   outline-offset: 2px;
 }
+
+.pasos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+
+.paso {
+  background: transparent;
+  color: var(--texto);
+  border: 1px solid var(--borde-control);
+  font-size: 0.95rem;
+}
+
+.paso-actual {
+  background: var(--acento);
+  color: var(--acento-texto);
+  border-color: var(--acento);
+  font-weight: 600;
+}
+
+.propuesta {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px;
+  margin-bottom: 8px;
+  border: 1px solid var(--borde-control);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.propuesta input {
+  margin-top: 5px;
+}
+
+.motivo {
+  display: block;
+  color: var(--texto-suave);
+}
+
+.contador {
+  font-weight: 700;
+}

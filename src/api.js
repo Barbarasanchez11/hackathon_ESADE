@@ -1,4 +1,9 @@
-import { PROPUESTA_SIMULADA } from "./datos/simulados.js";
+import {
+  BORRADORES_SIMULADOS,
+  PRESENTADOR_SIMULADO,
+  PROPUESTA_SIMULADA,
+  PROPUESTAS_SIMULADAS,
+} from "./datos/simulados.js";
 
 const API = "http://localhost:8000/api";
 const TIMEOUT_MS = 4000;
@@ -91,4 +96,65 @@ export async function verHuella(persona, { simulado }) {
     (agrupada[e.skill] ||= []).push(e);
   }
   return agrupada;
+}
+
+// --- Conector y Preparador ---
+
+// Presentaciones de Nadia en el modo simulado (la red de ejemplo empieza en 4).
+let presentacionesSimuladas = 4;
+
+// En una sesión real, un fallo al decidir se muestra; nunca se convierte en una decisión local.
+async function decisionReal(ruta, cuerpo) {
+  try {
+    return await pedir(ruta, { method: "POST", body: JSON.stringify(cuerpo) }, 15000);
+  } catch (e) {
+    if (e.status) throw e;
+    throw new Error("No se ha podido enviar la decisión. Comprueba la conexión y vuelve a intentarlo.");
+  }
+}
+
+export async function crearConector(entrada) {
+  if (!entrada.busca.trim()) throw new Error("Cuéntanos qué busca la persona.");
+  try {
+    const datos = await pedir("/conector", { method: "POST", body: JSON.stringify(entrada) }, 60000);
+    return { ...datos, simulado: false };
+  } catch (e) {
+    if (esErrorDelUsuario(e)) throw e;
+    return {
+      thread_id: "simulado",
+      presentador: PRESENTADOR_SIMULADO,
+      propuestas: structuredClone(PROPUESTAS_SIMULADAS),
+      simulado: true,
+    };
+  }
+}
+
+export async function decidirConector(threadId, decision, { simulado }) {
+  if (!simulado) return decisionReal(`/conector/${threadId}/decision`, decision);
+  if (decision.eleccion === null) return { estado: "sin_presentacion", eleccion: null };
+  const eleccion = PROPUESTAS_SIMULADAS.find((p) => p.persona_a_presentar === decision.eleccion);
+  return { estado: "elegida", eleccion };
+}
+
+export async function crearPreparador(conectorThreadId, { simulado, eleccion }) {
+  if (!simulado) {
+    try {
+      const datos = await pedir("/preparador", { method: "POST", body: JSON.stringify({ conector_thread_id: conectorThreadId }) }, 60000);
+      return { ...datos, simulado: false };
+    } catch (e) {
+      if (e.status && e.status !== 502) throw e;
+    }
+  }
+  return {
+    thread_id: "simulado",
+    borrador: structuredClone(BORRADORES_SIMULADOS[eleccion.persona_a_presentar]),
+    simulado: true,
+  };
+}
+
+export async function decidirPreparador(threadId, decision, { simulado }) {
+  if (!simulado) return decisionReal(`/preparador/${threadId}/decision`, decision);
+  if (decision.accion === "descartar") return { estado: "descartado", presentaciones_recibidas: null };
+  presentacionesSimuladas += 1;
+  return { estado: "enviado", presentaciones_recibidas: presentacionesSimuladas };
 }
