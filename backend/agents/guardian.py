@@ -53,7 +53,7 @@ def revisar_reglas(texto: str) -> list[dict]:
 
 def llamar_modelo(texto: str, fuentes: str) -> Optional[GuardianSalida]:
     contenido = f"<fuentes>\n{fuentes}\n</fuentes>\n\n<texto>\n{texto}\n</texto>"
-    return modelo.parse(PROMPT, contenido, GuardianSalida)
+    return modelo.parse(PROMPT, contenido, GuardianSalida, modelo=modelo.MODELO_GUARDIAN)
 
 
 def revisar(texto: str, fuentes: str) -> list[dict]:

@@ -10,6 +10,10 @@ from pydantic import BaseModel, ValidationError
 
 # GPT-OSS 120B admite salida JSON con esquema estricto en Groq. Se puede cambiar con GROQ_MODEL.
 MODELO = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
+# El Guardián usa otro modelo: en Groq el límite de tokens por minuto es por modelo, así no compiten.
+MODELO_GUARDIAN = os.getenv("GROQ_MODEL_GUARDIAN", "openai/gpt-oss-20b")
+# Cuánto razona el modelo antes de responder: con «low» gasta menos tokens y responde antes.
+ESFUERZO = os.getenv("GROQ_REASONING_EFFORT", "low")
 CARPETA_PROMPTS = Path(__file__).parent.parent / "prompts"
 
 T = TypeVar("T", bound=BaseModel)
@@ -50,13 +54,14 @@ def esquema_estricto(esquema: type[BaseModel]) -> dict:
     return limpiar(original)
 
 
-def parse(system: str, contenido: str, esquema: type[T]) -> Optional[T]:
+def parse(system: str, contenido: str, esquema: type[T], modelo: Optional[str] = None) -> Optional[T]:
     global _cliente
     try:
         if _cliente is None:
             _cliente = groq.Groq()  # Lee GROQ_API_KEY del entorno.
         respuesta = _cliente.chat.completions.create(
-            model=MODELO,
+            model=modelo or MODELO,
+            reasoning_effort=ESFUERZO,
             messages=[{"role": "system", "content": system}, {"role": "user", "content": contenido}],
             response_format={
                 "type": "json_schema",

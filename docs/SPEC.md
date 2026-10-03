@@ -4,7 +4,7 @@
 > Base: docs/fase-entender.pdf (tendencias, competencia e insights, 3 oct 2026).
 >
 > Leyenda: lo que no lleva marca sale de la fase Entender.
-> **[PROPUESTA]** = diseño nuestro aún sin validar en equipo. **[PENDIENTE]** = falta decidir.
+> **[PENDIENTE]** = falta decidir. Todo lo demás está validado por el equipo (3 oct 2026).
 
 ## 1. Problema y reto
 
@@ -48,13 +48,13 @@ Relevo convierte la presentación de confianza en el centro de la experiencia, y
 
 - **Cadena de relevos:** cada contacto llega como una presentación de alguien que conoce a las dos personas. La red llega a Lucía a través de su relevo; ella nunca escribe en frío. Las cadenas las inician empresas o instituciones con impacto social, con prioridad de acceso para quien no tiene red heredada.
 - **Regla de cinco presentaciones:** quien recibe cinco presentaciones pasa el relevo y presenta a la siguiente persona. Es el motor de crecimiento de la red (reciprocidad), y permite avanzar sin sentirse en deuda. Confirmado por el equipo: cinco.
-- **Senior relativo:** [PROPUESTA] el senior no tiene que ser alguien con mucha experiencia, sino alguien que va solo un paso por delante. Lo sugiere el insight «consejo de alguien solo un paso por delante». Lucía, tras sus cinco presentaciones, ya es senior relativa para quien viene detrás. Confirmar esta definición.
+- **Senior relativo:** el senior no tiene que ser alguien con mucha experiencia, sino alguien que va solo un paso por delante. Lo sugiere el insight «consejo de alguien solo un paso por delante». Lucía, tras sus cinco presentaciones, ya es senior relativa para quien viene detrás.
 
 **Quién inicia las cadenas:** empresas que apuestan por acompañar y dar oportunidades a nuevo talento. Abierto a cualquiera que cumpla ese compromiso, no a una sola institución.
 
 ## 4. Flujos de usuario
 
-Formato: el usuario hace → el sistema hace → resultado. [PROPUESTA] Los tres flujos son diseño nuestro a partir de las oportunidades de la fase Entender.
+Formato: el usuario hace → el sistema hace → resultado.
 
 ### 4.1 Recibir una presentación
 - **El usuario hace:** Lucía indica qué busca (sector, tipo de primer paso). Su relevo, la persona que la presenta, ve una posible conexión.
@@ -139,7 +139,7 @@ Revisa lo que escriben el Conector, el Preparador y el Espejo antes de que lo ve
 
 Huella de evidencias: cada skill se respalda con evidencias concretas de conversaciones reales (qué skill, qué pasó, quién lo confirmó y cuándo). Sin ranking ni puntuación global.
 
-[PROPUESTA] Formato de una evidencia: `{ skill, evidencia, cita, confirmada_por, fecha }`. Solo entra en la huella si la persona senior la ha confirmado. Se muestra como una lista de evidencias agrupadas por skill, nunca como nota, barra o porcentaje.
+Formato de una evidencia: `{ skill, evidencia, cita, confirmada_por, fecha }`. Solo entra en la huella si la persona senior la ha confirmado. Se muestra como una lista de evidencias agrupadas por skill, nunca como nota, barra o porcentaje.
 
 ## 7. Restricciones
 
@@ -157,10 +157,10 @@ Huella de evidencias: cada skill se respalda con evidencias concretas de convers
 
 ## 9. Criterios de éxito de la demo
 
-- [ ] [PROPUESTA] Lucía recibe una presentación sin haber escrito a nadie, y se ve el paso de aprobación del relevo.
-- [ ] [PROPUESTA] El Espejo genera feedback real de un café de ejemplo, y la persona senior lo corrige antes de que llegue a Lucía.
-- [ ] [PROPUESTA] Se ve la huella de evidencias, sin ninguna puntuación.
-- [ ] [PROPUESTA] Lucía llega a cinco presentaciones y pasa el relevo.
+- [ ] Lucía recibe una presentación sin haber escrito a nadie, y se ve el paso de aprobación del relevo.
+- [ ] El Espejo genera feedback real de un café de ejemplo, y la persona senior lo corrige antes de que llegue a Lucía.
+- [ ] Se ve la huella de evidencias, sin ninguna puntuación.
+- [ ] Lucía llega a cinco presentaciones y pasa el relevo.
 - [ ] La demo funciona aunque el backend esté caído (datos simulados).
 
 ## Preguntas abiertas
