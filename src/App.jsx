@@ -1,16 +1,22 @@
 import { useCallback, useState } from "react";
+import { reiniciarDemo } from "./api.js";
+import Logo from "./componentes/Logo.jsx";
 import Espejo from "./espejo/Espejo.jsx";
-import Presentacion from "./presentacion/Presentacion.jsx";
+import PasarRelevo from "./presentacion/PasarRelevo.jsx";
+import PresentarNadia from "./presentacion/PresentarNadia.jsx";
 
 const VISTAS = [
-  { id: "presentacion", titulo: "Presentar a Nadia", subtitulo: "Vista de Marta, el relevo de Nadia." },
-  { id: "espejo", titulo: "El café con feedback", subtitulo: "Espejo: aprende de cada conversación." },
+  { id: "presentacion", titulo: "Presentar a Nadia", Vista: PresentarNadia },
+  { id: "espejo", titulo: "El café", Vista: Espejo },
+  { id: "relevo", titulo: "Pasar el relevo", Vista: PasarRelevo },
 ];
 
 export default function App() {
   const [vista, setVista] = useState("presentacion");
   const [enCurso, setEnCurso] = useState(false);
-  const actual = VISTAS.find((v) => v.id === vista);
+  // Cambiar la clave vuelve a montar la vista desde cero (al reiniciar la demo).
+  const [version, setVersion] = useState(0);
+  const { Vista } = VISTAS.find((v) => v.id === vista);
   const alCambiarEnCurso = useCallback((valor) => setEnCurso(valor), []);
 
   function cambiarVista(id) {
@@ -20,10 +26,23 @@ export default function App() {
     setVista(id);
   }
 
+  async function reiniciar() {
+    if (!window.confirm("¿Reiniciar la demo? Nadia vuelve a 4 presentaciones y se borra lo que hayas hecho.")) return;
+    await reiniciarDemo();
+    setEnCurso(false);
+    setVista("presentacion");
+    setVersion((v) => v + 1);
+  }
+
   return (
-    <main>
-      <header>
-        <h1>Relevo</h1>
+    <div className="app">
+      <header className="cabecera">
+        <div className="cabecera-fila">
+          <Logo />
+          <button type="button" className="enlace" onClick={reiniciar}>
+            Reiniciar demo
+          </button>
+        </div>
         <nav aria-label="Pasos de la demo" className="pasos">
           {VISTAS.map((v, i) => (
             <button
@@ -33,15 +52,18 @@ export default function App() {
               aria-current={v.id === vista ? "step" : undefined}
               onClick={() => cambiarVista(v.id)}
             >
-              {i + 1}. {v.titulo}
+              <span className="paso-numero">{i + 1}</span>
+              {v.titulo}
             </button>
           ))}
         </nav>
-        <p>{actual.subtitulo}</p>
       </header>
 
-      {/* Cada vista guarda su propio estado; al cambiar de paso se empieza de cero. */}
-      {vista === "presentacion" ? <Presentacion onEnCurso={alCambiarEnCurso} /> : <Espejo onEnCurso={alCambiarEnCurso} />}
-    </main>
+      <main className="contenido">
+        <Vista key={`${vista}-${version}`} onEnCurso={alCambiarEnCurso} />
+      </main>
+
+      <footer className="pie">La IA propone, las personas deciden. Sin rankings ni puntuaciones.</footer>
+    </div>
   );
 }

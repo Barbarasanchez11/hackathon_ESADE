@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import { crearConector, crearPreparador, decidirConector, decidirPreparador } from "../api.js";
+import Avatar from "../componentes/Avatar.jsx";
+import CadenaProgreso from "../componentes/CadenaProgreso.jsx";
 import ListaEditable from "../componentes/ListaEditable.jsx";
 import Titulo from "../componentes/Titulo.jsx";
 
-const JUNIOR_ID = "nadia";
-const JUNIOR = "Nadia";
 const PRESENTACIONES_PARA_RELEVO = 5;
 
-function Busqueda({ onPropuestas }) {
-  const [busca, setBusca] = useState("Entrar en marketing: primeras prácticas y aprender analítica de campañas.");
+// Flujo común a «Presentar a Nadia» (presenta Marta) y «Pasar el relevo» (presenta Nadia).
+function Busqueda({ junior, presentador, buscaInicial, onPropuestas }) {
+  const JUNIOR = junior.nombre;
+  const [busca, setBusca] = useState(buscaInicial);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
 
@@ -20,7 +22,7 @@ function Busqueda({ onPropuestas }) {
     setCargando(true);
     setError("");
     try {
-      onPropuestas(await crearConector({ junior_id: JUNIOR_ID, busca }));
+      onPropuestas(await crearConector({ junior_id: junior.id, busca, presentador_id: presentador.id }));
     } catch (err) {
       setError(err.message);
       setCargando(false);
@@ -29,7 +31,13 @@ function Busqueda({ onPropuestas }) {
 
   return (
     <form onSubmit={buscar} className="tarjeta" aria-busy={cargando}>
-      <Titulo>¿A quién puedes presentar a {JUNIOR}?</Titulo>
+      <div className="tarjeta-cabecera">
+        <Avatar id={junior.id} nombre={JUNIOR} grande />
+        <div>
+          <p className="antetitulo">Vista de {presentador.nombre}</p>
+          <Titulo>¿A quién puedes presentar a {JUNIOR}?</Titulo>
+        </div>
+      </div>
       <p className="ayuda">{JUNIOR} no tiene que escribir a nadie: Relevo te propone personas de tu red y tú decides.</p>
 
       <label htmlFor="busca">Qué busca {JUNIOR}</label>
@@ -53,7 +61,7 @@ function Busqueda({ onPropuestas }) {
         aria-disabled={cargando || vacio}
         aria-describedby={vacio ? "motivo-busca" : undefined}
       >
-        {cargando ? "Buscando en tu red…" : "Buscar a quién presentar"}
+        {cargando ? "Buscando en tu red…" : "Buscar a quién presentar →"}
       </button>
       <p className="solo-lector" aria-live="polite">
         {cargando ? "Buscando en tu red, espera un momento." : ""}
@@ -62,7 +70,8 @@ function Busqueda({ onPropuestas }) {
   );
 }
 
-function Eleccion({ sesion, onElegida, onNinguna }) {
+function Eleccion({ junior, sesion, onElegida, onNinguna }) {
+  const JUNIOR = junior.nombre;
   // Sin preselección: el orden alfabético no debe funcionar como recomendación.
   const [eleccion, setEleccion] = useState(null);
   const [enviando, setEnviando] = useState(false);
@@ -98,21 +107,24 @@ function Eleccion({ sesion, onElegida, onNinguna }) {
       ) : (
         <fieldset>
           <legend>Personas de tu red</legend>
-          {sesion.propuestas.map((p) => (
-            <label key={p.persona_a_presentar} className="propuesta">
-              <input
-                type="radio"
-                name="eleccion"
-                value={p.persona_a_presentar}
-                checked={eleccion === p.persona_a_presentar}
-                onChange={() => setEleccion(p.persona_a_presentar)}
-              />
-              <span>
-                <strong>{p.persona_nombre}</strong>
-                <span className="motivo">{p.motivo}</span>
-              </span>
-            </label>
-          ))}
+          <div className="propuestas">
+            {sesion.propuestas.map((p) => (
+              <label key={p.persona_a_presentar} className="propuesta">
+                <input
+                  type="radio"
+                  name="eleccion"
+                  value={p.persona_a_presentar}
+                  checked={eleccion === p.persona_a_presentar}
+                  onChange={() => setEleccion(p.persona_a_presentar)}
+                />
+                <Avatar id={p.persona_a_presentar} nombre={p.persona_nombre} />
+                <span>
+                  <strong className="propuesta-nombre">{p.persona_nombre}</strong>
+                  <span className="motivo">{p.motivo}</span>
+                </span>
+              </label>
+            ))}
+          </div>
         </fieldset>
       )}
 
@@ -125,7 +137,7 @@ function Eleccion({ sesion, onElegida, onNinguna }) {
       <div className="acciones">
         {sesion.propuestas.length > 0 && (
           <button type="button" className="principal" disabled={enviando || !eleccion} onClick={() => decidir(eleccion)}>
-            {enviando ? "Preparando…" : "Preparar presentación"}
+            {enviando ? "Preparando…" : "Preparar presentación →"}
           </button>
         )}
         <button type="button" className="secundario" disabled={enviando} onClick={() => decidir(null)}>
@@ -139,7 +151,8 @@ function Eleccion({ sesion, onElegida, onNinguna }) {
   );
 }
 
-function Borrador({ sesion, eleccion, onDecision }) {
+function Borrador({ junior, sesion, eleccion, onDecision }) {
+  const JUNIOR = junior.nombre;
   const [b, setB] = useState(sesion.borrador);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
@@ -176,9 +189,15 @@ function Borrador({ sesion, eleccion, onDecision }) {
 
   return (
     <section className="tarjeta" aria-busy={enviando}>
-      <Titulo>
-        Presentación de {JUNIOR} a {persona}
-      </Titulo>
+      <div className="tarjeta-cabecera">
+        <span className="pareja" aria-hidden="true">
+          <Avatar id={junior.id} nombre={JUNIOR} />
+          <Avatar id={eleccion.persona_a_presentar} nombre={persona} />
+        </span>
+        <Titulo>
+          Presentación de {JUNIOR} a {persona}
+        </Titulo>
+      </div>
       <p className="aviso">Borrador de Relevo, revísalo antes de enviar. No se envía nada hasta que lo apruebes.</p>
       {sesion.simulado && (
         <p className="aviso aviso-fuerte">Borrador de ejemplo: no se ha podido conectar con Relevo.</p>
@@ -245,7 +264,8 @@ function Borrador({ sesion, eleccion, onDecision }) {
 
 const PASOS_EN_CURSO = ["eleccion", "borrador", "error_preparador"];
 
-export default function Presentacion({ onEnCurso }) {
+export default function FlujoPresentacion({ junior, presentador, buscaInicial, onEnCurso, onEnviada }) {
+  const JUNIOR = junior.nombre;
   const [paso, setPaso] = useState("busqueda");
   const [conector, setConector] = useState(null);
   const [eleccion, setEleccion] = useState(null);
@@ -257,10 +277,10 @@ export default function Presentacion({ onEnCurso }) {
     onEnCurso?.(PASOS_EN_CURSO.includes(paso));
   }, [paso, onEnCurso]);
 
-  async function preparar(elegida) {
+  async function preparar() {
     setError("");
     try {
-      setBorrador(await crearPreparador(conector.thread_id, { simulado: conector.simulado, eleccion: elegida }));
+      setBorrador(await crearPreparador(conector.thread_id, { simulado: conector.simulado }));
       setPaso("borrador");
     } catch (err) {
       setError(err.message);
@@ -271,7 +291,7 @@ export default function Presentacion({ onEnCurso }) {
   async function alElegir(elegida) {
     setEleccion(elegida);
     setPaso("preparando");
-    await preparar(elegida);
+    await preparar();
   }
 
   function reiniciar() {
@@ -291,6 +311,9 @@ export default function Presentacion({ onEnCurso }) {
 
       {paso === "busqueda" && (
         <Busqueda
+          junior={junior}
+          presentador={presentador}
+          buscaInicial={buscaInicial}
           onPropuestas={(s) => {
             setConector(s);
             setPaso("eleccion");
@@ -298,7 +321,7 @@ export default function Presentacion({ onEnCurso }) {
         />
       )}
       {(paso === "eleccion" || paso === "preparando") && (
-        <Eleccion sesion={conector} onElegida={alElegir} onNinguna={() => setPaso("ninguna")} />
+        <Eleccion junior={junior} sesion={conector} onElegida={alElegir} onNinguna={() => setPaso("ninguna")} />
       )}
       {paso === "error_preparador" && (
         <section className="tarjeta">
@@ -310,7 +333,7 @@ export default function Presentacion({ onEnCurso }) {
             Ya elegiste presentar a {JUNIOR} a {eleccion.persona_nombre}. No se ha enviado nada.
           </p>
           <div className="acciones">
-            <button type="button" className="principal" onClick={() => preparar(eleccion)}>
+            <button type="button" className="principal" onClick={preparar}>
               Volver a intentarlo
             </button>
             <button type="button" className="secundario" onClick={reiniciar}>
@@ -321,11 +344,13 @@ export default function Presentacion({ onEnCurso }) {
       )}
       {paso === "borrador" && (
         <Borrador
+          junior={junior}
           sesion={borrador}
           eleccion={eleccion}
           onDecision={(r) => {
             setResultado(r);
             setPaso(r.estado === "enviado" ? "enviada" : "descartada");
+            if (r.estado === "enviado") onEnviada?.(r);
           }}
         />
       )}
@@ -344,9 +369,7 @@ export default function Presentacion({ onEnCurso }) {
               </p>
             </>
           )}
-          <p className="contador">
-            {JUNIOR} lleva {resultado.presentaciones_recibidas} de {PRESENTACIONES_PARA_RELEVO} presentaciones.
-          </p>
+          <CadenaProgreso nombre={JUNIOR} recibidas={resultado.presentaciones_recibidas} total={PRESENTACIONES_PARA_RELEVO} />
           {resultado.presentaciones_recibidas >= PRESENTACIONES_PARA_RELEVO && (
             <p>Después de este café, {JUNIOR} podrá pasar el relevo a quien viene detrás.</p>
           )}

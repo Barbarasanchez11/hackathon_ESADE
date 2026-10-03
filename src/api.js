@@ -1,9 +1,5 @@
-import {
-  BORRADORES_SIMULADOS,
-  PRESENTADOR_SIMULADO,
-  PROPUESTA_SIMULADA,
-  PROPUESTAS_SIMULADAS,
-} from "./datos/simulados.js";
+import redEjemplo from "../backend/datos/red.json";
+import { BORRADORES_SIMULADOS, PROPUESTA_SIMULADA, PROPUESTAS_SIMULADAS } from "./datos/simulados.js";
 
 const API = "http://localhost:8000/api";
 const TIMEOUT_MS = 4000;
@@ -98,12 +94,44 @@ export async function verHuella(persona, { simulado }) {
   return agrupada;
 }
 
-// --- Conector y Preparador ---
+// --- Red, Conector y Preparador ---
 
-// Estado del modo simulado, con las mismas reglas que el backend.
-let presentacionesSimuladas = 4; // La red de ejemplo empieza en 4.
-const eleccionesSimuladasUsadas = new Set();
-let simulacionesConector = 0;
+// Modo simulado: copia local de la red con las mismas reglas que backend/red.py.
+const RELEVO = 5;
+let personas = {};
+let conexiones = new Set();
+const sesionesConector = new Map();
+const sesionesPreparador = new Map();
+const eleccionesUsadas = new Set();
+let contadorSesiones = 0;
+// En cuanto una llamada pasa a datos simulados, la red se lee también en local para que todo cuadre.
+let modoSimulado = false;
+
+const clave = (a, b) => [a, b].sort().join("|");
+
+function reiniciarLocal() {
+  personas = Object.fromEntries(structuredClone(redEjemplo.personas).map((p) => [p.id, p]));
+  conexiones = new Set(redEjemplo.conexiones.map(([a, b]) => clave(a, b)));
+  sesionesConector.clear();
+  sesionesPreparador.clear();
+  eleccionesUsadas.clear();
+  for (const persona of Object.keys(huellaSimulada)) delete huellaSimulada[persona];
+  modoSimulado = false;
+}
+reiniciarLocal();
+
+const seConocen = (a, b) => conexiones.has(clave(a, b));
+const contactos = (id) => Object.keys(personas).filter((otro) => otro !== id && seConocen(id, otro)).sort();
+const puedePasarRelevo = (id) => personas[id].presentaciones_recibidas >= RELEVO;
+const relevosDe = (junior) => contactos(junior).filter(puedePasarRelevo);
+const candidatos = (presentador, junior) => contactos(presentador).filter((c) => c !== junior && !seConocen(c, junior));
+const quienVieneDetras = (id) => (puedePasarRelevo(id) ? contactos(id).filter((c) => !puedePasarRelevo(c)) : []);
+const nombre = (id) => personas[id].nombre;
+
+function siguienteId(prefijo) {
+  contadorSesiones += 1;
+  return `${prefijo}-simulado-${contadorSesiones}`;
+}
 
 // En una sesión real, un fallo al decidir se muestra; nunca se convierte en una decisión local.
 async function decisionReal(ruta, cuerpo) {
@@ -115,40 +143,95 @@ async function decisionReal(ruta, cuerpo) {
   }
 }
 
-function comprobarPresentador(nombre) {
-  if (nombre.trim().toLowerCase() !== PRESENTADOR_SIMULADO.toLowerCase()) {
-    throw new Error("Solo quien presenta puede decidir.");
+function comprobarPresentador(texto, id) {
+  const t = texto.trim().toLowerCase();
+  if (t !== id && t !== nombre(id).toLowerCase()) throw new Error("Solo quien presenta puede decidir.");
+}
+
+function personaLocal(id) {
+  const p = personas[id];
+  return {
+    id,
+    nombre: p.nombre,
+    presentaciones_recibidas: p.presentaciones_recibidas,
+    puede_pasar_relevo: puedePasarRelevo(id),
+    detras: quienVieneDetras(id).map((d) => ({ id: d, nombre: nombre(d), comparte: structuredClone(personas[d].comparte) })),
+  };
+}
+
+export async function verPersona(id) {
+  if (!modoSimulado) {
+    try {
+      return { ...(await pedir(`/red/${id}`)), simulado: false };
+    } catch {
+      // Sigue con la red local.
+    }
   }
+  return { ...personaLocal(id), simulado: true };
+}
+
+export async function reiniciarDemo() {
+  reiniciarLocal();
+  try {
+    await pedir("/demo/reiniciar", { method: "POST" });
+  } catch {
+    // Sin backend basta con reiniciar el modo simulado.
+  }
+}
+
+function conectorLocal(entrada) {
+  if (!personas[entrada.junior_id]) throw new Error("No conocemos a esa persona en la red.");
+  const relevos = relevosDe(entrada.junior_id);
+  let presentador = entrada.presentador_id;
+  if (presentador != null) {
+    if (!relevos.includes(presentador)) throw new Error("Esa persona no puede presentar a la junior.");
+  } else if (relevos.length === 1) {
+    presentador = relevos[0];
+  } else {
+    throw new Error(relevos.length ? "Hay varias personas que pueden presentarla: indica quién presenta." : "Esta persona todavía no tiene un relevo que pueda presentarla.");
+  }
+  const posibles = candidatos(presentador, entrada.junior_id);
+  const propuestas = PROPUESTAS_SIMULADAS.filter(
+    (p) => p.junior === entrada.junior_id && p.presentador === presentador && posibles.includes(p.persona_a_presentar),
+  )
+    .map(({ junior: _junior, ...p }) => ({ ...p, presentador_nombre: nombre(p.presentador), persona_nombre: nombre(p.persona_a_presentar) }))
+    .sort((a, b) => a.persona_nombre.localeCompare(b.persona_nombre));
+  const thread_id = siguienteId("conector");
+  sesionesConector.set(thread_id, { junior: entrada.junior_id, presentador, propuestas, eleccion: undefined });
+  return { thread_id, presentador: nombre(presentador), propuestas, simulado: true };
 }
 
 export async function crearConector(entrada) {
   if (!entrada.busca.trim()) throw new Error("Cuéntanos qué busca la persona.");
-  try {
-    const datos = await pedir("/conector", { method: "POST", body: JSON.stringify(entrada) }, 60000);
-    return { ...datos, simulado: false };
-  } catch (e) {
-    if (esErrorDelUsuario(e)) throw e;
-    simulacionesConector += 1;
-    return {
-      thread_id: `simulado-${simulacionesConector}`,
-      presentador: PRESENTADOR_SIMULADO,
-      propuestas: structuredClone(PROPUESTAS_SIMULADAS),
-      simulado: true,
-    };
+  if (!modoSimulado) {
+    try {
+      const datos = await pedir("/conector", { method: "POST", body: JSON.stringify(entrada) }, 60000);
+      return { ...datos, simulado: false };
+    } catch (e) {
+      if (esErrorDelUsuario(e)) throw e;
+      modoSimulado = true;
+    }
   }
+  return conectorLocal(entrada);
 }
 
 export async function decidirConector(threadId, decision, { simulado }) {
   if (!simulado) return decisionReal(`/conector/${threadId}/decision`, decision);
-  comprobarPresentador(decision.decidido_por);
-  if (decision.eleccion === null) return { estado: "sin_presentacion", eleccion: null };
-  const eleccion = PROPUESTAS_SIMULADAS.find((p) => p.persona_a_presentar === decision.eleccion);
+  const sesion = sesionesConector.get(threadId);
+  if (!sesion || sesion.eleccion !== undefined) throw new Error("No hay ninguna propuesta pendiente.");
+  comprobarPresentador(decision.decidido_por, sesion.presentador);
+  if (decision.eleccion === null) {
+    sesion.eleccion = null;
+    return { estado: "sin_presentacion", eleccion: null };
+  }
+  const eleccion = sesion.propuestas.find((p) => p.persona_a_presentar === decision.eleccion);
   if (!eleccion) throw new Error("Esa persona no está entre las propuestas.");
-  return { estado: "elegida", eleccion: structuredClone(eleccion) };
+  sesion.eleccion = { ...eleccion, junior: sesion.junior };
+  return { estado: "elegida", eleccion: structuredClone(sesion.eleccion) };
 }
 
 // Una sesión real sigue siendo real: si el Preparador falla, se muestra el error y se puede reintentar.
-export async function crearPreparador(conectorThreadId, { simulado, eleccion }) {
+export async function crearPreparador(conectorThreadId, { simulado }) {
   if (!simulado) {
     try {
       const datos = await pedir("/preparador", { method: "POST", body: JSON.stringify({ conector_thread_id: conectorThreadId }) }, 60000);
@@ -159,17 +242,26 @@ export async function crearPreparador(conectorThreadId, { simulado, eleccion }) 
       throw new Error("No se ha podido conectar con Relevo. Comprueba la conexión y vuelve a intentarlo.");
     }
   }
-  if (eleccionesSimuladasUsadas.has(conectorThreadId)) throw new Error("Esta presentación ya se ha preparado.");
-  const borrador = BORRADORES_SIMULADOS[eleccion.persona_a_presentar];
+  const sesion = sesionesConector.get(conectorThreadId);
+  if (!sesion?.eleccion) throw new Error("No hay ninguna propuesta elegida.");
+  if (eleccionesUsadas.has(conectorThreadId)) throw new Error("Esta presentación ya se ha preparado.");
+  const { junior, persona_a_presentar: persona, presentador } = sesion.eleccion;
+  const borrador = BORRADORES_SIMULADOS[`${junior}-${persona}`];
   if (!borrador) throw new Error("No hay borrador de ejemplo para esta persona.");
-  eleccionesSimuladasUsadas.add(conectorThreadId);
-  return { thread_id: `${conectorThreadId}-borrador`, borrador: structuredClone(borrador), simulado: true };
+  eleccionesUsadas.add(conectorThreadId);
+  const thread_id = siguienteId("preparador");
+  sesionesPreparador.set(thread_id, { junior, persona, presentador, decidido: false });
+  return { thread_id, borrador: structuredClone(borrador), simulado: true };
 }
 
 export async function decidirPreparador(threadId, decision, { simulado }) {
   if (!simulado) return decisionReal(`/preparador/${threadId}/decision`, decision);
-  comprobarPresentador(decision.aprobado_por);
+  const sesion = sesionesPreparador.get(threadId);
+  if (!sesion || sesion.decidido) throw new Error("No hay ninguna propuesta pendiente.");
+  comprobarPresentador(decision.aprobado_por, sesion.presentador);
+  sesion.decidido = true;
   if (decision.accion === "descartar") return { estado: "descartado", presentaciones_recibidas: null };
-  presentacionesSimuladas += 1;
-  return { estado: "enviado", presentaciones_recibidas: presentacionesSimuladas, enviado: decision.borrador_editado };
+  conexiones.add(clave(sesion.junior, sesion.persona));
+  personas[sesion.junior].presentaciones_recibidas += 1;
+  return { estado: "enviado", presentaciones_recibidas: personas[sesion.junior].presentaciones_recibidas };
 }

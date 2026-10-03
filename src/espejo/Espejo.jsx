@@ -156,7 +156,7 @@ function Revision({ sesion, onDecision }) {
         {p.evidencias.length === 0 && <p className="ayuda">Sin evidencias.</p>}
         {p.evidencias.map((ev, i) => (
           <div key={i} className="evidencia">
-            <p className="skill">{ev.skill}</p>
+            <p className="skill etiqueta">{ev.skill}</p>
             <textarea
               aria-label={`Evidencia de ${ev.skill}`}
               rows={2}
@@ -165,7 +165,7 @@ function Revision({ sesion, onDecision }) {
                 setP({ ...p, evidencias: p.evidencias.map((x, j) => (j === i ? { ...x, evidencia: e.target.value } : x)) })
               }
             />
-            <blockquote>«{ev.cita}»</blockquote>
+            <blockquote className="cita">«{ev.cita}»</blockquote>
             <button
               type="button"
               className="secundario"
@@ -221,7 +221,7 @@ function VistaNadia({ feedback, huella, onReiniciar }) {
       {Object.keys(huella).length === 0 && <p className="ayuda">Todavía no hay evidencias confirmadas.</p>}
       {Object.entries(huella).map(([skill, evidencias]) => (
         <div key={skill} className="evidencia">
-          <h3 className="skill">{skill}</h3>
+          <h3 className="skill etiqueta">{skill}</h3>
           <ul>
             {evidencias.map((e, i) => (
               <li key={i}>
