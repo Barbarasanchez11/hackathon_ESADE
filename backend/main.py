@@ -55,6 +55,13 @@ def ver_huella(persona: str):
     return espejo.huella(persona)
 
 
+@app.delete("/api/huella/{persona}")
+def borrar_huella(persona: str):
+    """Derecho de supresión (RGPD art. 17): la persona puede borrar su huella entera."""
+    espejo.HUELLA.pop(persona.lower(), None)
+    return {"ok": True}
+
+
 @app.post("/api/conector")
 def crear_conector(entrada: conector.ConectorEntrada):
     thread_id, resultado = _errores(conector.iniciar, entrada)

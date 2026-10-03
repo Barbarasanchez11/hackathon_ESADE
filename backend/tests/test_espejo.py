@@ -109,3 +109,11 @@ def test_salida_no_valida_reintenta_una_vez(monkeypatch):
     with pytest.raises(espejo.EspejoError):
         espejo.generar_feedback(espejo.EspejoEntrada(**ENTRADA))
     assert len(llamadas) == 2
+
+
+def test_la_persona_puede_borrar_su_huella(cliente):
+    thread_id = cliente.post("/api/espejo", json=ENTRADA).json()["thread_id"]
+    cliente.post(f"/api/espejo/{thread_id}/decision", json={"accion": "aprobar", "aprobado_por": "Javier"})
+    assert cliente.get("/api/huella/Lucía").json() != {}
+    assert cliente.delete("/api/huella/Lucía").json() == {"ok": True}
+    assert cliente.get("/api/huella/Lucía").json() == {}

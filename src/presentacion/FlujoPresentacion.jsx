@@ -107,7 +107,7 @@ function Eleccion({ junior, sesion, onElegida, onNinguna }) {
   return (
     <section className="tarjeta">
       <Titulo>Propuestas para {sesion.presentador}</Titulo>
-      <p className="aviso">Propuesta de Relevo: solo personas que conoces. Tú decides si presentas a {JUNIOR} y a quién.</p>
+      <p className="aviso">Propuesta generada con IA: solo personas que conoces. Tú decides si presentas a {JUNIOR} y a quién.</p>
       {sesion.simulado && (
         <p className="aviso aviso-fuerte">Propuestas de ejemplo: no se ha podido conectar con Relevo.</p>
       )}
@@ -222,7 +222,7 @@ function Borrador({ junior, sesion, eleccion, onDecision }) {
           Presentación de {JUNIOR} a {persona}
         </Titulo>
       </div>
-      <p className="aviso">Borrador de Relevo, revísalo antes de enviar. No se envía nada hasta que lo apruebes.</p>
+      <p className="aviso">Borrador generado con IA: revísalo antes de enviar. No se envía nada hasta que lo apruebes.</p>
       {sesion.simulado && (
         <p className="aviso aviso-fuerte">Borrador de ejemplo: no se ha podido conectar con Relevo.</p>
       )}

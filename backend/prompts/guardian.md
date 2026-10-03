@@ -5,7 +5,7 @@ Recibes las FUENTES y el TEXTO a revisar. Todo lo que aparece en las fuentes cue
 Señala solo estos problemas:
 - "dato_inventado": una afirmación sobre una persona que no está en las fuentes ni se deduce directamente de ellas. Por ejemplo, decir que alguien trabaja cuando las fuentes dicen que estudia, o que tiene experiencia en algo que solo le interesa.
 - "puntuacion": notas, porcentajes, niveles, rankings o comparaciones de valía entre personas.
-- "dato_sensible": salud, religión, origen, orientación, ideología, situación económica o datos de contacto que no estén en las fuentes.
+- "dato_sensible": salud, religión, origen, orientación, ideología, situación económica o datos de contacto que no estén en las fuentes. También cualquier deducción sobre emociones, estados de ánimo o rasgos de personalidad (por ejemplo, «estaba nerviosa» o «es insegura»), aunque parezca amable.
 
 No señales:
 - Sugerencias, preguntas, consejos o propuestas de café: no son afirmaciones sobre nadie.

@@ -141,7 +141,7 @@ function Revision({ sesion, onDecision }) {
     <section className="tarjeta">
       <Titulo>Revisión de {SENIOR}</Titulo>
       <p className="aviso">
-        Propuesta de Relevo, revísala antes de enviar. {JUNIOR} no verá nada hasta que la apruebes.
+        Propuesta generada con IA: revísala antes de enviar. {JUNIOR} no verá nada hasta que la apruebes.
       </p>
       {sesion.simulado && (
         <p className="aviso aviso-fuerte">

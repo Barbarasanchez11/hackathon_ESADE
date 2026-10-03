@@ -38,7 +38,7 @@ Del análisis de segmentos (fase Entender), que se mantiene:
 - **Jobs:** conseguir unas primeras prácticas o empleo en su sector; entender cómo funciona ese mundo por dentro.
 - **Gains:** que alguien con credibilidad responda por ella; saber qué decir y qué no; avanzar sin sentirse en deuda.
 
-[EJEMPLO] Para la demo: estudia el último curso de ADE con beca y quiere entrar en marketing.
+Estudia el último curso de ADE con beca y quiere entrar en marketing.
 
 Segmento secundario: emprendedora en fase inicial («si no llegas presentada, no existes»), que cubre a los emprendedores que pide el briefing. Fuera del foco de la demo.
 
@@ -47,10 +47,10 @@ Segmento secundario: emprendedora en fase inicial («si no llegas presentada, no
 Relevo convierte la presentación de confianza en el centro de la experiencia, y hace que quien la recibe la devuelva.
 
 - **Cadena de relevos:** cada contacto llega como una presentación de alguien que conoce a las dos personas. La red llega a Lucía a través de su relevo; ella nunca escribe en frío. Las cadenas las inician empresas o instituciones con impacto social, con prioridad de acceso para quien no tiene red heredada.
-- **Regla de cinco presentaciones:** quien recibe cinco presentaciones pasa el relevo y presenta a la siguiente persona. Es el motor de crecimiento de la red (reciprocidad), y permite avanzar sin sentirse en deuda. [PENDIENTE] ¿Cinco es el número correcto o depende del segmento?
+- **Regla de cinco presentaciones:** quien recibe cinco presentaciones pasa el relevo y presenta a la siguiente persona. Es el motor de crecimiento de la red (reciprocidad), y permite avanzar sin sentirse en deuda. Confirmado por el equipo: cinco.
 - **Senior relativo:** [PROPUESTA] el senior no tiene que ser alguien con mucha experiencia, sino alguien que va solo un paso por delante. Lo sugiere el insight «consejo de alguien solo un paso por delante». Lucía, tras sus cinco presentaciones, ya es senior relativa para quien viene detrás. Confirmar esta definición.
 
-[PENDIENTE] Qué institución inicia las primeras cadenas: Esade, el patrocinador u otra.
+**Quién inicia las cadenas:** empresas que apuestan por acompañar y dar oportunidades a nuevo talento. Abierto a cualquiera que cumpla ese compromiso, no a una sola institución.
 
 ## 4. Flujos de usuario
 
@@ -147,7 +147,7 @@ Huella de evidencias: cada skill se respalda con evidencias concretas de convers
 - Consentimiento explícito de las dos personas para grabar o procesar audio.
 - Nada de puntuar personas para contratación: ni rankings, ni notas, ni porcentajes de encaje.
 - Cada persona decide qué datos comparte en la cadena.
-- [PENDIENTE] Revisar el encaje con la Ley de IA europea y el RGPD. El uso en empleo es de alto riesgo si se evalúa a personas, así que la huella debe seguir siendo evidencia confirmada por humanos, no una evaluación automática.
+- Cumplimiento de la Ley de IA y del RGPD: ver la sección 10.
 
 ## 8. Fuera de alcance (hackathon)
 
@@ -166,7 +166,41 @@ Huella de evidencias: cada skill se respalda con evidencias concretas de convers
 ## Preguntas abiertas
 - [PENDIENTE] Sin autenticación, la huella (`GET /api/huella/{persona}`) es visible para cualquiera y se identifica por el nombre. Aceptable para la demo, no para un piloto.
 - [PENDIENTE] Sin autenticación, la interfaz rellena quién decide (el presentador, la senior). El backend comprueba el nombre, pero no puede saber quién ha pulsado el botón.
-- ¿Segmento 1 (impacto social) o 3 (emprendedores) para la persona principal? Este spec usa el 1.
-- ¿Cinco presentaciones es el número correcto?
-- ¿Qué institución inicia las primeras cadenas?
+- Persona principal: segmento 1 (sin red heredada), Lucía. Decidido.
 - ¿Podemos hacer entrevistas rápidas en el hackathon para validar el miedo a pedir?
+
+## 10. Cumplimiento: Ley de IA y RGPD
+
+> Análisis de encaje para el producto, no asesoramiento jurídico. Estado a 3 oct 2026.
+
+### Clasificación según la Ley de IA
+- **Relevo no es un sistema de selección de personal.** El Anexo III, punto 4 (empleo), considera de alto riesgo los sistemas para contratar o seleccionar: anuncios dirigidos, filtrado de candidaturas o evaluación de candidatos. Relevo facilita presentaciones entre personas para que hagan red. No decide ni filtra candidaturas, y ninguna empresa lo usa para evaluar a nadie.
+- **Línea roja de diseño:** si la huella o las propuestas se ofrecieran a empleadores para seleccionar o comparar personas, Relevo pasaría a ser de alto riesgo. Además, al haber elaboración de perfiles, no podría acogerse a la excepción del art. 6.3. Por eso:
+  - La huella es de la persona y no se comparte con reclutadores.
+  - No hay rankings ni puntuaciones (§7).
+  - Las evidencias las confirma una persona.
+- **Calendario:** el Omnibus digital sobre IA (en vigor desde el 27 jul 2026) retrasa las obligaciones de alto riesgo del Anexo III al 2 dic 2027. Las prohibiciones del art. 5 se aplican desde el 2 feb 2025 y la transparencia del art. 50 desde el 2 ago 2026.
+
+### Ley de IA: requisito → cómo lo cumple Relevo
+| Requisito | Cómo lo cumple Relevo | Estado |
+|---|---|---|
+| Art. 5.1.f: prohibido reconocer emociones en el trabajo y en centros educativos | El Espejo trabaja solo con texto (transcripción o notas), nunca con la voz. El prompt le prohíbe deducir emociones, estados de ánimo o personalidad, y el Guardián lo marca si aparece. | Hecho |
+| Art. 50: transparencia con las personas | Toda propuesta se muestra como «generada con IA», y la vista «¿Cómo funciona?» explica qué hace cada agente. | Hecho |
+| Supervisión humana (buena práctica alineada con el art. 14) | Ningún agente envía nada: quien presenta o la persona senior aprueba, edita o descarta cada propuesta. | Hecho |
+| Art. 4: alfabetización en IA | Guía breve para relevos y seniors (qué hace la IA, cómo revisar una propuesta). | Pendiente |
+
+### RGPD: requisito → cómo lo cumple Relevo
+| Requisito | Cómo lo cumple Relevo | Estado |
+|---|---|---|
+| Base jurídica (art. 6.1.a) | Consentimiento: cada persona decide qué comparte. El audio necesita el consentimiento explícito de las dos personas. | Hecho (demo) |
+| Minimización (art. 5.1.c) | Al modelo solo llega `comparte`. La transcripción no se guarda tras generar la propuesta. El audio nunca se almacena. | Hecho |
+| Decisiones automatizadas (art. 22) | No hay ninguna: todo efecto lo aprueba una persona. | Hecho |
+| Categorías especiales (art. 9) | Los prompts las prohíben y el Guardián las señala. | Hecho |
+| Derechos de acceso y supresión (arts. 15 y 17) | `GET /api/huella/{persona}` y `DELETE /api/huella/{persona}`. Falta exponer la supresión en la interfaz. | Parcial |
+| Transferencias internacionales (cap. V) | Groq procesa en EE. UU. Su DPA incorpora las SCC de la UE. Hay que aceptar el DPA y activar *zero data retention* en la consola de Groq. | Pendiente (configuración) |
+| Información (art. 13) | Aviso de privacidad claro antes del primer uso. | Pendiente |
+| Evaluación de impacto (art. 35) | Probablemente obligatoria antes de un piloto: se evalúan aspectos personales de gente joven con tecnología nueva. | Pendiente (antes del piloto) |
+| Seguridad (art. 32) | Sin autenticación en la demo (§8). Imprescindible antes de un piloto. | Pendiente (piloto) |
+
+Fuentes: Ley de IA (Reglamento UE 2024/1689) y Omnibus digital sobre IA; RGPD (Reglamento UE 2016/679); documentación legal de GroqCloud (DPA y «Your Data in GroqCloud»).
+
