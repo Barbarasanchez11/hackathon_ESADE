@@ -15,9 +15,14 @@ from agents import conector, espejo, guardian, preparador
 from agents.modelo import AgenteError, AprobadorNoValido
 
 app = FastAPI(title="Relevo")
+# Orígenes permitidos: los de desarrollo más los de producción (RELEVO_ORIGENES, separados por comas).
+ORIGENES = ["http://localhost:5173", "http://127.0.0.1:5173"] + [
+    o.strip() for o in os.getenv("RELEVO_ORIGENES", "").split(",") if o.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=ORIGENES,
     allow_methods=["*"],
     allow_headers=["*"],
 )

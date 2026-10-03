@@ -1,0 +1,17 @@
+# Backend de Relevo en Render (plan gratuito). La clave de Groq se pone a mano en el panel: nunca en el repositorio.
+services:
+  - type: web
+    name: relevo-backend
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/red/lucia
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: GROQ_API_KEY
+        sync: false
+      - key: RELEVO_ORIGENES
+        sync: false

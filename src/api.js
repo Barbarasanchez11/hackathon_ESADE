@@ -2,7 +2,8 @@ import redEjemplo from "../backend/datos/red.json";
 import { PRESENTACIONES_PARA_RELEVO } from "./constantes.js";
 import { BORRADORES_SIMULADOS, PROPUESTA_SIMULADA, PROPUESTAS_SIMULADAS } from "./datos/simulados.js";
 
-const API = "http://localhost:8000/api";
+// En local, el backend de siempre; en producción, la URL de Render (variable VITE_API_URL en Vercel).
+const API = `${import.meta.env.VITE_API_URL ?? "http://localhost:8000"}/api`;
 const TIMEOUT_MS = 4000;
 
 // Huella local para cuando el backend no responde.
