@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { crearEspejo, decidirEspejo } from "../api.js";
+import { crearEspejo, decidirEspejo, MOTIVO_DEMO } from "../api.js";
 import Avatar from "../componentes/Avatar.jsx";
 import AvisosGuardian from "../componentes/AvisosGuardian.jsx";
 import Boton from "../componentes/Boton.jsx";
@@ -181,7 +181,7 @@ function Revision({ sesion, onDecision }) {
         </p>
       </div>
       {sesion.simulado && (
-        <p className="aviso-demo">Propuesta de ejemplo: no se ha podido conectar con Relevo y no sale de esta conversación.</p>
+        <p className="aviso-demo">Propuesta de ejemplo ({MOTIVO_DEMO}): no sale de esta conversación.</p>
       )}
       <EtiquetaIA />
       <AvisosGuardian avisos={sesion.simulado ? null : sesion.avisos} />
@@ -287,7 +287,7 @@ export default function Cafe({ onEnCurso, onCompletado, onIr }) {
             {!aprobado
               ? `${JUNIOR.nombre} no ha recibido nada.`
               : simuladoFinal
-                ? "Modo demo sin conexión: no se ha enviado nada. Las evidencias solo se guardan en este dispositivo."
+                ? `Propuesta de ejemplo (${MOTIVO_DEMO}): no se ha enviado nada. Las evidencias solo se guardan en este dispositivo.`
                 : `Lo que ${SENIOR.nombre} ha confirmado ya está en la huella de ${JUNIOR.nombre}.`}
           </p>
         </div>

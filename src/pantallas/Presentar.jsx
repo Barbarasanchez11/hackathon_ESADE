@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { crearConector, crearPreparador, decidirConector, decidirPreparador, perfilCompartido } from "../api.js";
+import { crearConector, crearPreparador, decidirConector, decidirPreparador, MOTIVO_DEMO, perfilCompartido } from "../api.js";
 import Avatar from "../componentes/Avatar.jsx";
 import AvisosGuardian from "../componentes/AvisosGuardian.jsx";
 import Boton from "../componentes/Boton.jsx";
@@ -116,7 +116,7 @@ function Eleccion({ junior, sesion, onElegida, onNinguna }) {
         <Titulo>Podrían encajar</Titulo>
         <p>Desliza para explorar. No hay un orden mejor o peor: tú decides si presentas a {junior.nombre} y a quién.</p>
       </div>
-      {sesion.simulado && <AvisoDemo>Propuestas de ejemplo: no se ha podido conectar con Relevo.</AvisoDemo>}
+      {sesion.simulado && <AvisoDemo>Propuestas de ejemplo: {MOTIVO_DEMO}.</AvisoDemo>}
       <AvisosGuardian avisos={sesion.simulado ? null : sesion.avisos} />
 
       {total === 0 ? (
@@ -246,7 +246,7 @@ function Borrador({ junior, sesion, eleccion, onDecision }) {
         <Titulo>Tu presentación</Titulo>
         <p>Revísala, edítala o descártala. Tú decides qué se envía.</p>
       </div>
-      {sesion.simulado && <AvisoDemo>Borrador de ejemplo: no se ha podido conectar con Relevo.</AvisoDemo>}
+      {sesion.simulado && <AvisoDemo>Borrador de ejemplo: {MOTIVO_DEMO}.</AvisoDemo>}
       <EtiquetaIA>Borrador generado con IA</EtiquetaIA>
       <AvisosGuardian avisos={sesion.simulado ? null : sesion.avisos} />
 
@@ -443,7 +443,7 @@ export default function Presentar({ junior, presentador, buscaInicial, notaBusca
           </>
         }
       >
-        <p className="aviso-demo">Modo demo sin conexión: no se ha enviado nada a nadie.</p>
+        <p className="aviso-demo">{MOTIVO_DEMO.charAt(0).toUpperCase() + MOTIVO_DEMO.slice(1)}: no se ha enviado nada a nadie.</p>
       </Final>
     ) : (
       <Final

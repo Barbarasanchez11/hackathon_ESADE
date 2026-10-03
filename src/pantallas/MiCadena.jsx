@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { verPersona } from "../api.js";
+import { ETIQUETA_DEMO, verPersona } from "../api.js";
 import Avatar from "../componentes/Avatar.jsx";
 import Boton from "../componentes/Boton.jsx";
 import CadenaProgreso from "../componentes/CadenaProgreso.jsx";
@@ -118,7 +118,7 @@ export default function MiCadena({ onEnCurso, onCompletado, onIr }) {
           primera a alguien más.
         </p>
       </div>
-      {lucia.simulado && <p className="aviso-demo">Modo demo sin conexión.</p>}
+      {lucia.simulado && <p className="aviso-demo">{ETIQUETA_DEMO}.</p>}
       <CadenaProgreso nombre={LUCIA.nombre} recibidas={lucia.presentaciones_recibidas} />
 
       {lucia.detras.length === 0 ? (

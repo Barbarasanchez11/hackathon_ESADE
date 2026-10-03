@@ -2,8 +2,16 @@ import redEjemplo from "../backend/datos/red.json";
 import { PRESENTACIONES_PARA_RELEVO } from "./constantes.js";
 import { BORRADORES_SIMULADOS, PROPUESTA_SIMULADA, PROPUESTAS_SIMULADAS } from "./datos/simulados.js";
 
-// En local, el backend de siempre; en producción, la URL de Render (variable VITE_API_URL en Vercel).
+// En local, el backend de siempre; en producción, la URL del backend (variable VITE_API_URL).
 const API = `${import.meta.env.VITE_API_URL ?? "http://localhost:8000"}/api`;
+
+// Versión pública sin backend (VITE_SOLO_DEMO=1): arranca directamente con los datos de ejemplo,
+// sin intentar llamadas que fallarían.
+export const SOLO_DEMO = import.meta.env.VITE_SOLO_DEMO === "1";
+
+// Cómo explicar en pantalla por qué se ven datos de ejemplo.
+export const MOTIVO_DEMO = SOLO_DEMO ? "versión demo con datos de ejemplo" : "no se ha podido conectar con Relevo";
+export const ETIQUETA_DEMO = SOLO_DEMO ? "Versión demo · datos de ejemplo" : "Modo demo sin conexión";
 const TIMEOUT_MS = 4000;
 
 // Huella local para cuando el backend no responde.
@@ -69,6 +77,7 @@ export async function crearEspejo(entrada) {
     throw new Error("Falta el consentimiento de las dos personas para usar el audio.");
   }
   try {
+    if (modoSimulado) throw new Error("modo demo");
     // El modelo puede tardar: más margen que el resto de llamadas.
     const datos = await pedir("/espejo", { method: "POST", body: JSON.stringify(entrada) }, 60000);
     return { ...datos, simulado: false };
@@ -155,7 +164,7 @@ function reiniciarLocal() {
   eleccionesUsadas.clear();
   for (const persona of Object.keys(huellaSimulada)) delete huellaSimulada[persona];
   sesionEspejoSimulada = null;
-  modoSimulado = false;
+  modoSimulado = SOLO_DEMO;
   for (const fn of oyentesModo) fn(false);
 }
 reiniciarLocal();
@@ -225,6 +234,7 @@ export function perfilCompartido(id) {
 // la persona puede haber aprobado cafés reales antes de perder la conexión.
 export async function borrarHuella(persona) {
   delete huellaSimulada[persona.toLowerCase()];
+  if (SOLO_DEMO) return;
   try {
     await pedir(`/huella/${encodeURIComponent(persona)}`, { method: "DELETE" });
   } catch (e) {
@@ -248,6 +258,7 @@ export async function verPersona(id) {
 
 export async function reiniciarDemo() {
   reiniciarLocal();
+  if (SOLO_DEMO) return;
   try {
     await pedir("/demo/reiniciar", { method: "POST" });
   } catch {

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { reiniciarDemo, suscribirModo } from "./api.js";
+import { enModoSimulado, ETIQUETA_DEMO, reiniciarDemo, suscribirModo } from "./api.js";
 import BarraInferior from "./componentes/BarraInferior.jsx";
 import Cabecera from "./componentes/Cabecera.jsx";
 import Bienvenida from "./pantallas/Bienvenida.jsx";
@@ -21,7 +21,7 @@ function leerTema() {
 export default function App() {
   const [pantalla, setPantalla] = useState("bienvenida");
   const [tema, setTema] = useState(leerTema);
-  const [simulado, setSimulado] = useState(false);
+  const [simulado, setSimulado] = useState(enModoSimulado);
   const [enCurso, setEnCurso] = useState(false);
   // Pasos de la demo completados: presentacion, cafe, relevo.
   const [hechos, setHechos] = useState(() => new Set());
@@ -114,7 +114,7 @@ export default function App() {
             <BarraInferior pantalla={pantalla} onIr={ir} />
             {simulado && (
               <p className="offline-pill" role="status">
-                <span aria-hidden="true" /> Modo demo sin conexión
+                <span aria-hidden="true" /> {ETIQUETA_DEMO}
               </p>
             )}
           </>
