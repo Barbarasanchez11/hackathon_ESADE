@@ -32,7 +32,18 @@ def contactos(id_: str) -> list[str]:
 
 def relevos_de(junior: str) -> list[str]:
     """Quién puede presentar a la junior: sus contactos que ya han pasado por la cadena."""
-    return [c for c in contactos(junior) if PERSONAS[c]["presentaciones_recibidas"] >= 5]
+    return [c for c in contactos(junior) if puede_pasar_relevo(c)]
+
+
+def puede_pasar_relevo(id_: str) -> bool:
+    return PERSONAS[id_]["presentaciones_recibidas"] >= 5
+
+
+def quien_viene_detras(id_: str) -> list[str]:
+    """Contactos que aún no han completado sus cinco presentaciones y a los que id_ puede presentar."""
+    if not puede_pasar_relevo(id_):
+        return []
+    return [c for c in contactos(id_) if not puede_pasar_relevo(c)]
 
 
 def candidatos(presentador: str, junior: str) -> list[str]:

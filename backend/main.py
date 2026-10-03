@@ -77,4 +77,23 @@ def ver_persona(persona_id: str):
     if persona_id not in red.PERSONAS:
         raise HTTPException(404, "No conocemos a esa persona en la red.")
     p = red.persona(persona_id)
-    return {"id": p["id"], "nombre": p["nombre"], "presentaciones_recibidas": p["presentaciones_recibidas"]}
+    return {
+        "id": p["id"],
+        "nombre": p["nombre"],
+        "presentaciones_recibidas": p["presentaciones_recibidas"],
+        "puede_pasar_relevo": red.puede_pasar_relevo(persona_id),
+        # De quien viene detrás solo se muestra lo que ha decidido compartir.
+        "detras": [
+            {"id": d, "nombre": red.persona(d)["nombre"], "comparte": red.persona(d)["comparte"]}
+            for d in red.quien_viene_detras(persona_id)
+        ],
+    }
+
+
+@app.post("/api/demo/reiniciar")
+def reiniciar_demo():
+    """Vuelve la demo al estado inicial para poder ensayarla varias veces."""
+    red.reiniciar()
+    espejo.HUELLA.clear()
+    preparador._USADAS.clear()
+    return {"ok": True}
