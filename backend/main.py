@@ -5,7 +5,9 @@ load_dotenv()
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from agents import espejo
+import red
+from agents import conector, espejo, preparador
+from agents.modelo import AgenteError, AprobadorNoValido
 
 app = FastAPI(title="Relevo")
 app.add_middleware(
@@ -15,28 +17,64 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+SIN_PENDIENTE = "No hay ninguna propuesta pendiente con ese identificador."
+
+
+def _errores(funcion, *args):
+    """Traduce los errores de los agentes a códigos HTTP comunes."""
+    try:
+        return funcion(*args)
+    except (espejo.SinConsentimiento, conector.DatosNoValidos) as e:
+        raise HTTPException(400, str(e))
+    except AprobadorNoValido as e:
+        raise HTTPException(403, str(e))
+    except KeyError:
+        raise HTTPException(404, SIN_PENDIENTE)
+    except AgenteError as e:
+        raise HTTPException(502, str(e))
+
 
 @app.post("/api/espejo")
 def crear_espejo(entrada: espejo.EspejoEntrada):
-    try:
-        thread_id, propuesta = espejo.iniciar(entrada)
-    except espejo.SinConsentimiento as e:
-        raise HTTPException(400, str(e))
-    except espejo.EspejoError as e:
-        raise HTTPException(502, str(e))
+    thread_id, propuesta = _errores(espejo.iniciar, entrada)
     return {"thread_id": thread_id, "propuesta": propuesta}
 
 
 @app.post("/api/espejo/{thread_id}/decision")
 def decidir_espejo(thread_id: str, decision: espejo.Decision):
-    try:
-        return espejo.decidir(thread_id, decision)
-    except espejo.AprobadorNoValido as e:
-        raise HTTPException(403, str(e))
-    except KeyError:
-        raise HTTPException(404, "No hay ninguna propuesta pendiente con ese identificador.")
+    return _errores(espejo.decidir, thread_id, decision)
 
 
 @app.get("/api/huella/{persona}")
 def ver_huella(persona: str):
     return espejo.huella(persona)
+
+
+@app.post("/api/conector")
+def crear_conector(entrada: conector.ConectorEntrada):
+    thread_id, resultado = _errores(conector.iniciar, entrada)
+    return {"thread_id": thread_id, **resultado}
+
+
+@app.post("/api/conector/{thread_id}/decision")
+def decidir_conector(thread_id: str, decision: conector.DecisionConector):
+    return _errores(conector.decidir, thread_id, decision)
+
+
+@app.post("/api/preparador")
+def crear_preparador(entrada: preparador.PreparadorEntrada):
+    thread_id, borrador = _errores(preparador.iniciar, entrada)
+    return {"thread_id": thread_id, "borrador": borrador}
+
+
+@app.post("/api/preparador/{thread_id}/decision")
+def decidir_preparador(thread_id: str, decision: preparador.DecisionPreparador):
+    return _errores(preparador.decidir, thread_id, decision)
+
+
+@app.get("/api/red/{persona_id}")
+def ver_persona(persona_id: str):
+    if persona_id not in red.PERSONAS:
+        raise HTTPException(404, "No conocemos a esa persona en la red.")
+    p = red.persona(persona_id)
+    return {"id": p["id"], "nombre": p["nombre"], "presentaciones_recibidas": p["presentaciones_recibidas"]}
