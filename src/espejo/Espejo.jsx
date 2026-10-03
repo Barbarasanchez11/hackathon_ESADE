@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { crearEspejo, decidirEspejo, verHuella } from "../api.js";
 import ListaEditable from "../componentes/ListaEditable.jsx";
 import Titulo from "../componentes/Titulo.jsx";
@@ -241,8 +241,12 @@ function VistaNadia({ feedback, huella, onReiniciar }) {
   );
 }
 
-export default function Espejo() {
+export default function Espejo({ onEnCurso }) {
   const [paso, setPaso] = useState("cafe");
+
+  useEffect(() => {
+    onEnCurso?.(paso === "revision");
+  }, [paso, onEnCurso]);
   const [sesion, setSesion] = useState(null);
   const [resultado, setResultado] = useState(null);
   const [huella, setHuella] = useState({});

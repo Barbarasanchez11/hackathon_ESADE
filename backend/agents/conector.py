@@ -19,6 +19,8 @@ PROMPT = modelo.cargar_prompt("conector")
 class ConectorEntrada(BaseModel):
     junior_id: str
     busca: str
+    # Obligatorio si la junior tiene más de un relevo: quién presenta lo decide una persona, no el orden.
+    presentador_id: Optional[str] = None
 
 
 class Propuesta(BaseModel):
@@ -114,7 +116,14 @@ def iniciar(entrada: ConectorEntrada) -> tuple[str, dict]:
     relevos = red.relevos_de(entrada.junior_id)
     if not relevos:
         raise DatosNoValidos("Esta persona todavía no tiene un relevo que pueda presentarla.")
-    presentador = relevos[0]
+    if entrada.presentador_id is not None:
+        if entrada.presentador_id not in relevos:
+            raise DatosNoValidos("Esa persona no puede presentar a la junior.")
+        presentador = entrada.presentador_id
+    elif len(relevos) == 1:
+        presentador = relevos[0]
+    else:
+        raise DatosNoValidos("Hay varias personas que pueden presentarla: indica quién presenta.")
     candidatos = red.candidatos(presentador, entrada.junior_id)
     salida = modelo.generar_validado(
         lambda: llamar_modelo(entrada.junior_id, presentador, candidatos, entrada.busca),

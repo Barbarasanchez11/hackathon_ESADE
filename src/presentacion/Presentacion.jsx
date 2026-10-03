@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { crearConector, crearPreparador, decidirConector, decidirPreparador } from "../api.js";
 import ListaEditable from "../componentes/ListaEditable.jsx";
 import Titulo from "../componentes/Titulo.jsx";
@@ -12,9 +12,11 @@ function Busqueda({ onPropuestas }) {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
 
+  const vacio = !busca.trim();
+
   async function buscar(e) {
     e.preventDefault();
-    if (cargando) return;
+    if (cargando || vacio) return;
     setCargando(true);
     setError("");
     try {
@@ -39,7 +41,18 @@ function Busqueda({ onPropuestas }) {
         </p>
       )}
 
-      <button type="submit" className="principal" aria-disabled={cargando}>
+      {vacio && (
+        <p id="motivo-busca" className="ayuda">
+          Cuéntanos qué busca {JUNIOR}.
+        </p>
+      )}
+
+      <button
+        type="submit"
+        className="principal"
+        aria-disabled={cargando || vacio}
+        aria-describedby={vacio ? "motivo-busca" : undefined}
+      >
         {cargando ? "Buscando en tu red…" : "Buscar a quién presentar"}
       </button>
       <p className="solo-lector" aria-live="polite">
@@ -50,7 +63,8 @@ function Busqueda({ onPropuestas }) {
 }
 
 function Eleccion({ sesion, onElegida, onNinguna }) {
-  const [eleccion, setEleccion] = useState(sesion.propuestas[0]?.persona_a_presentar ?? null);
+  // Sin preselección: el orden alfabético no debe funcionar como recomendación.
+  const [eleccion, setEleccion] = useState(null);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
 
@@ -118,6 +132,9 @@ function Eleccion({ sesion, onElegida, onNinguna }) {
           No presentar ahora
         </button>
       </div>
+      <p className="solo-lector" aria-live="polite">
+        {enviando ? "Preparando la presentación, espera un momento." : ""}
+      </p>
     </section>
   );
 }
@@ -213,7 +230,7 @@ function Borrador({ sesion, eleccion, onDecision }) {
 
       <div className="acciones">
         <button type="button" className="principal" disabled={enviando} onClick={() => decidir("aprobar")}>
-          {enviando ? "Enviando…" : "Aprobar y enviar"}
+          {enviando ? "Enviando…" : sesion.simulado ? "Aprobar (ejemplo: no se envía)" : "Aprobar y enviar"}
         </button>
         <button type="button" className="secundario" disabled={enviando} onClick={() => decidir("descartar")}>
           Descartar presentación
@@ -226,7 +243,9 @@ function Borrador({ sesion, eleccion, onDecision }) {
   );
 }
 
-export default function Presentacion() {
+const PASOS_EN_CURSO = ["eleccion", "borrador", "error_preparador"];
+
+export default function Presentacion({ onEnCurso }) {
   const [paso, setPaso] = useState("busqueda");
   const [conector, setConector] = useState(null);
   const [eleccion, setEleccion] = useState(null);
@@ -234,15 +253,25 @@ export default function Presentacion() {
   const [resultado, setResultado] = useState(null);
   const [error, setError] = useState("");
 
-  async function alElegir(elegida) {
-    setEleccion(elegida);
+  useEffect(() => {
+    onEnCurso?.(PASOS_EN_CURSO.includes(paso));
+  }, [paso, onEnCurso]);
+
+  async function preparar(elegida) {
     setError("");
     try {
       setBorrador(await crearPreparador(conector.thread_id, { simulado: conector.simulado, eleccion: elegida }));
       setPaso("borrador");
     } catch (err) {
       setError(err.message);
+      setPaso("error_preparador");
     }
+  }
+
+  async function alElegir(elegida) {
+    setEleccion(elegida);
+    setPaso("preparando");
+    await preparar(elegida);
   }
 
   function reiniciar() {
@@ -259,11 +288,6 @@ export default function Presentacion() {
   return (
     <>
       {simulado && <p className="simulado">Modo demo sin conexión</p>}
-      {error && (
-        <p role="alert" className="error">
-          {error}
-        </p>
-      )}
 
       {paso === "busqueda" && (
         <Busqueda
@@ -273,7 +297,28 @@ export default function Presentacion() {
           }}
         />
       )}
-      {paso === "eleccion" && <Eleccion sesion={conector} onElegida={alElegir} onNinguna={() => setPaso("ninguna")} />}
+      {(paso === "eleccion" || paso === "preparando") && (
+        <Eleccion sesion={conector} onElegida={alElegir} onNinguna={() => setPaso("ninguna")} />
+      )}
+      {paso === "error_preparador" && (
+        <section className="tarjeta">
+          <Titulo>No se ha podido preparar la presentación</Titulo>
+          <p role="alert" className="error">
+            {error}
+          </p>
+          <p>
+            Ya elegiste presentar a {JUNIOR} a {eleccion.persona_nombre}. No se ha enviado nada.
+          </p>
+          <div className="acciones">
+            <button type="button" className="principal" onClick={() => preparar(eleccion)}>
+              Volver a intentarlo
+            </button>
+            <button type="button" className="secundario" onClick={reiniciar}>
+              Empezar otra presentación
+            </button>
+          </div>
+        </section>
+      )}
       {paso === "borrador" && (
         <Borrador
           sesion={borrador}
@@ -286,10 +331,19 @@ export default function Presentacion() {
       )}
       {paso === "enviada" && (
         <section className="tarjeta">
-          <Titulo>Presentación enviada</Titulo>
-          <p>
-            {JUNIOR} y {eleccion.persona_nombre} ya tienen el mensaje y sus fichas. {JUNIOR} no ha tenido que pedir nada.
-          </p>
+          {borrador.simulado ? (
+            <>
+              <Titulo>Presentación de ejemplo aprobada</Titulo>
+              <p className="aviso aviso-fuerte">Modo demo sin conexión: no se ha enviado nada a nadie.</p>
+            </>
+          ) : (
+            <>
+              <Titulo>Presentación enviada</Titulo>
+              <p>
+                {JUNIOR} y {eleccion.persona_nombre} ya tienen el mensaje y sus fichas. {JUNIOR} no ha tenido que pedir nada.
+              </p>
+            </>
+          )}
           <p className="contador">
             {JUNIOR} lleva {resultado.presentaciones_recibidas} de {PRESENTACIONES_PARA_RELEVO} presentaciones.
           </p>

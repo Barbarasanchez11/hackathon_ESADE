@@ -100,3 +100,13 @@ def test_cada_eleccion_se_prepara_una_vez(cliente):
     conector_id = _elegir(cliente)
     assert cliente.post("/api/preparador", json={"conector_thread_id": conector_id}).status_code == 200
     assert cliente.post("/api/preparador", json={"conector_thread_id": conector_id}).status_code == 404
+
+
+def test_con_varios_relevos_hay_que_elegir_quien_presenta(cliente):
+    red.PERSONAS["iker"]["presentaciones_recibidas"] = 5
+    r = cliente.post("/api/conector", json={"junior_id": "nadia", "busca": "Prácticas"})
+    assert r.status_code == 400
+    r = cliente.post("/api/conector", json={"junior_id": "nadia", "busca": "Prácticas", "presentador_id": "marta"})
+    assert r.status_code == 200
+    r = cliente.post("/api/conector", json={"junior_id": "nadia", "busca": "Prácticas", "presentador_id": "javier"})
+    assert r.status_code == 400

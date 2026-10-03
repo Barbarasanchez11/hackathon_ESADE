@@ -245,6 +245,16 @@ h2:focus {
   cursor: pointer;
 }
 
+.propuesta:has(input:checked) {
+  border: 2px solid var(--acento);
+  background: var(--aviso-fondo);
+}
+
+.propuesta:focus-within {
+  outline: 3px solid var(--foco);
+  outline-offset: 2px;
+}
+
 .propuesta input {
   margin-top: 5px;
 }

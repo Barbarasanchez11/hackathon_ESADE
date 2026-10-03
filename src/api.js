@@ -100,8 +100,10 @@ export async function verHuella(persona, { simulado }) {
 
 // --- Conector y Preparador ---
 
-// Presentaciones de Nadia en el modo simulado (la red de ejemplo empieza en 4).
-let presentacionesSimuladas = 4;
+// Estado del modo simulado, con las mismas reglas que el backend.
+let presentacionesSimuladas = 4; // La red de ejemplo empieza en 4.
+const eleccionesSimuladasUsadas = new Set();
+let simulacionesConector = 0;
 
 // En una sesión real, un fallo al decidir se muestra; nunca se convierte en una decisión local.
 async function decisionReal(ruta, cuerpo) {
@@ -113,6 +115,12 @@ async function decisionReal(ruta, cuerpo) {
   }
 }
 
+function comprobarPresentador(nombre) {
+  if (nombre.trim().toLowerCase() !== PRESENTADOR_SIMULADO.toLowerCase()) {
+    throw new Error("Solo quien presenta puede decidir.");
+  }
+}
+
 export async function crearConector(entrada) {
   if (!entrada.busca.trim()) throw new Error("Cuéntanos qué busca la persona.");
   try {
@@ -120,8 +128,9 @@ export async function crearConector(entrada) {
     return { ...datos, simulado: false };
   } catch (e) {
     if (esErrorDelUsuario(e)) throw e;
+    simulacionesConector += 1;
     return {
-      thread_id: "simulado",
+      thread_id: `simulado-${simulacionesConector}`,
       presentador: PRESENTADOR_SIMULADO,
       propuestas: structuredClone(PROPUESTAS_SIMULADAS),
       simulado: true,
@@ -131,30 +140,36 @@ export async function crearConector(entrada) {
 
 export async function decidirConector(threadId, decision, { simulado }) {
   if (!simulado) return decisionReal(`/conector/${threadId}/decision`, decision);
+  comprobarPresentador(decision.decidido_por);
   if (decision.eleccion === null) return { estado: "sin_presentacion", eleccion: null };
   const eleccion = PROPUESTAS_SIMULADAS.find((p) => p.persona_a_presentar === decision.eleccion);
-  return { estado: "elegida", eleccion };
+  if (!eleccion) throw new Error("Esa persona no está entre las propuestas.");
+  return { estado: "elegida", eleccion: structuredClone(eleccion) };
 }
 
+// Una sesión real sigue siendo real: si el Preparador falla, se muestra el error y se puede reintentar.
 export async function crearPreparador(conectorThreadId, { simulado, eleccion }) {
   if (!simulado) {
     try {
       const datos = await pedir("/preparador", { method: "POST", body: JSON.stringify({ conector_thread_id: conectorThreadId }) }, 60000);
       return { ...datos, simulado: false };
     } catch (e) {
-      if (e.status && e.status !== 502) throw e;
+      if (e.status === 502) throw new Error("No se ha podido preparar el borrador. Vuelve a intentarlo.");
+      if (e.status) throw e;
+      throw new Error("No se ha podido conectar con Relevo. Comprueba la conexión y vuelve a intentarlo.");
     }
   }
-  return {
-    thread_id: "simulado",
-    borrador: structuredClone(BORRADORES_SIMULADOS[eleccion.persona_a_presentar]),
-    simulado: true,
-  };
+  if (eleccionesSimuladasUsadas.has(conectorThreadId)) throw new Error("Esta presentación ya se ha preparado.");
+  const borrador = BORRADORES_SIMULADOS[eleccion.persona_a_presentar];
+  if (!borrador) throw new Error("No hay borrador de ejemplo para esta persona.");
+  eleccionesSimuladasUsadas.add(conectorThreadId);
+  return { thread_id: `${conectorThreadId}-borrador`, borrador: structuredClone(borrador), simulado: true };
 }
 
 export async function decidirPreparador(threadId, decision, { simulado }) {
   if (!simulado) return decisionReal(`/preparador/${threadId}/decision`, decision);
+  comprobarPresentador(decision.aprobado_por);
   if (decision.accion === "descartar") return { estado: "descartado", presentaciones_recibidas: null };
   presentacionesSimuladas += 1;
-  return { estado: "enviado", presentaciones_recibidas: presentacionesSimuladas };
+  return { estado: "enviado", presentaciones_recibidas: presentacionesSimuladas, enviado: decision.borrador_editado };
 }
