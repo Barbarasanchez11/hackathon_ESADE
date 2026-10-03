@@ -1,14 +1,11 @@
 import { useEffect, useState } from "react";
 import { crearConector, crearPreparador, decidirConector, decidirPreparador } from "../api.js";
 import Avatar from "../componentes/Avatar.jsx";
-import CadenaProgreso from "../componentes/CadenaProgreso.jsx";
 import ListaEditable from "../componentes/ListaEditable.jsx";
 import Titulo from "../componentes/Titulo.jsx";
 
-const PRESENTACIONES_PARA_RELEVO = 5;
-
 // Flujo común a «Presentar a Nadia» (presenta Marta) y «Pasar el relevo» (presenta Nadia).
-function Busqueda({ junior, presentador, buscaInicial, onPropuestas }) {
+function Busqueda({ junior, presentador, buscaInicial, notaBusca, onPropuestas }) {
   const JUNIOR = junior.nombre;
   const [busca, setBusca] = useState(buscaInicial);
   const [cargando, setCargando] = useState(false);
@@ -30,7 +27,7 @@ function Busqueda({ junior, presentador, buscaInicial, onPropuestas }) {
   }
 
   return (
-    <form onSubmit={buscar} className="tarjeta" aria-busy={cargando}>
+    <form onSubmit={buscar} className="tarjeta">
       <div className="tarjeta-cabecera">
         <Avatar id={junior.id} nombre={JUNIOR} grande />
         <div>
@@ -41,7 +38,18 @@ function Busqueda({ junior, presentador, buscaInicial, onPropuestas }) {
       <p className="ayuda">{JUNIOR} no tiene que escribir a nadie: Relevo te propone personas de tu red y tú decides.</p>
 
       <label htmlFor="busca">Qué busca {JUNIOR}</label>
-      <textarea id="busca" rows={3} value={busca} onChange={(e) => setBusca(e.target.value)} />
+      {notaBusca && (
+        <p id="nota-busca" className="ayuda">
+          {notaBusca}
+        </p>
+      )}
+      <textarea
+        id="busca"
+        rows={3}
+        value={busca}
+        aria-describedby={notaBusca ? "nota-busca" : undefined}
+        onChange={(e) => setBusca(e.target.value)}
+      />
 
       {error && (
         <p role="alert" className="error">
@@ -61,7 +69,8 @@ function Busqueda({ junior, presentador, buscaInicial, onPropuestas }) {
         aria-disabled={cargando || vacio}
         aria-describedby={vacio ? "motivo-busca" : undefined}
       >
-        {cargando ? "Buscando en tu red…" : "Buscar a quién presentar →"}
+        {cargando ? "Buscando en tu red…" : "Buscar a quién presentar"}
+        {!cargando && <span aria-hidden="true"> →</span>}
       </button>
       <p className="solo-lector" aria-live="polite">
         {cargando ? "Buscando en tu red, espera un momento." : ""}
@@ -95,7 +104,7 @@ function Eleccion({ junior, sesion, onElegida, onNinguna }) {
   }
 
   return (
-    <section className="tarjeta" aria-busy={enviando}>
+    <section className="tarjeta">
       <Titulo>Propuestas para {sesion.presentador}</Titulo>
       <p className="aviso">Propuesta de Relevo: solo personas que conoces. Tú decides si presentas a {JUNIOR} y a quién.</p>
       {sesion.simulado && (
@@ -134,10 +143,23 @@ function Eleccion({ junior, sesion, onElegida, onNinguna }) {
         </p>
       )}
 
+      {sesion.propuestas.length > 0 && !eleccion && (
+        <p id="motivo-eleccion" className="ayuda">
+          Elige una persona para continuar.
+        </p>
+      )}
+
       <div className="acciones">
         {sesion.propuestas.length > 0 && (
-          <button type="button" className="principal" disabled={enviando || !eleccion} onClick={() => decidir(eleccion)}>
-            {enviando ? "Preparando…" : "Preparar presentación →"}
+          <button
+            type="button"
+            className="principal"
+            aria-disabled={enviando || !eleccion}
+            aria-describedby={!eleccion ? "motivo-eleccion" : undefined}
+            onClick={() => !enviando && eleccion && decidir(eleccion)}
+          >
+            {enviando ? "Preparando…" : "Preparar presentación"}
+            {!enviando && <span aria-hidden="true"> →</span>}
           </button>
         )}
         <button type="button" className="secundario" disabled={enviando} onClick={() => decidir(null)}>
@@ -188,7 +210,7 @@ function Borrador({ junior, sesion, eleccion, onDecision }) {
   }
 
   return (
-    <section className="tarjeta" aria-busy={enviando}>
+    <section className="tarjeta">
       <div className="tarjeta-cabecera">
         <span className="pareja" aria-hidden="true">
           <Avatar id={junior.id} nombre={JUNIOR} />
@@ -264,13 +286,12 @@ function Borrador({ junior, sesion, eleccion, onDecision }) {
 
 const PASOS_EN_CURSO = ["eleccion", "borrador", "error_preparador"];
 
-export default function FlujoPresentacion({ junior, presentador, buscaInicial, onEnCurso, onEnviada }) {
+export default function FlujoPresentacion({ junior, presentador, buscaInicial, notaBusca, onEnCurso, onEnviada }) {
   const JUNIOR = junior.nombre;
   const [paso, setPaso] = useState("busqueda");
   const [conector, setConector] = useState(null);
   const [eleccion, setEleccion] = useState(null);
   const [borrador, setBorrador] = useState(null);
-  const [resultado, setResultado] = useState(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -298,7 +319,6 @@ export default function FlujoPresentacion({ junior, presentador, buscaInicial, o
     setConector(null);
     setEleccion(null);
     setBorrador(null);
-    setResultado(null);
     setError("");
     setPaso("busqueda");
   }
@@ -314,6 +334,7 @@ export default function FlujoPresentacion({ junior, presentador, buscaInicial, o
           junior={junior}
           presentador={presentador}
           buscaInicial={buscaInicial}
+          notaBusca={notaBusca}
           onPropuestas={(s) => {
             setConector(s);
             setPaso("eleccion");
@@ -348,7 +369,6 @@ export default function FlujoPresentacion({ junior, presentador, buscaInicial, o
           sesion={borrador}
           eleccion={eleccion}
           onDecision={(r) => {
-            setResultado(r);
             setPaso(r.estado === "enviado" ? "enviada" : "descartada");
             if (r.estado === "enviado") onEnviada?.(r);
           }}
@@ -368,10 +388,6 @@ export default function FlujoPresentacion({ junior, presentador, buscaInicial, o
                 {JUNIOR} y {eleccion.persona_nombre} ya tienen el mensaje y sus fichas. {JUNIOR} no ha tenido que pedir nada.
               </p>
             </>
-          )}
-          <CadenaProgreso nombre={JUNIOR} recibidas={resultado.presentaciones_recibidas} total={PRESENTACIONES_PARA_RELEVO} />
-          {resultado.presentaciones_recibidas >= PRESENTACIONES_PARA_RELEVO && (
-            <p>Después de este café, {JUNIOR} podrá pasar el relevo a quien viene detrás.</p>
           )}
           <div className="acciones">
             <button type="button" className="secundario" onClick={reiniciar}>

@@ -1,7 +1,6 @@
 """Agente Preparador: redacta la presentación y las fichas; el relevo la aprueba antes de enviar (SPEC §5.1)."""
 
 import json
-import uuid
 from typing import Literal, Optional, TypedDict
 
 from langgraph.checkpoint.memory import InMemorySaver
@@ -49,7 +48,6 @@ class Estado(TypedDict, total=False):
     persona: str
     borrador: dict
     enviado: dict
-    presentaciones_recibidas: int
     estado: str
 
 
@@ -78,8 +76,8 @@ def aprobacion_relevo(estado: Estado) -> Command:
 
 def enviar(estado: Estado) -> Estado:
     # Para la demo el envío se simula: queda registrada la presentación en la red.
-    total = red.registrar_presentacion(estado["junior"], estado["persona"])
-    return {"estado": "enviado", "presentaciones_recibidas": total}
+    red.registrar_presentacion(estado["junior"], estado["persona"])
+    return {"estado": "enviado"}
 
 
 def _construir_grafo():
@@ -103,7 +101,7 @@ def iniciar(entrada: PreparadorEntrada) -> tuple[str, dict]:
     ).model_dump()
     _USADAS.add(entrada.conector_thread_id)
 
-    thread_id = str(uuid.uuid4())
+    thread_id = red.nuevo_hilo()
     config = {"configurable": {"thread_id": thread_id}}
     grafo.invoke(
         {
@@ -119,6 +117,8 @@ def iniciar(entrada: PreparadorEntrada) -> tuple[str, dict]:
 
 
 def decidir(thread_id: str, decision: DecisionPreparador) -> dict:
+    if not red.hilo_vigente(thread_id):
+        raise KeyError(thread_id)
     config = {"configurable": {"thread_id": thread_id}}
     estado = grafo.get_state(config)
     if estado.next != ("aprobacion_relevo",):
@@ -127,4 +127,5 @@ def decidir(thread_id: str, decision: DecisionPreparador) -> dict:
         raise AprobadorNoValido("Solo quien presenta puede aprobar y enviar la presentación.")
     grafo.invoke(Command(resume=decision.model_dump()), config)
     valores = grafo.get_state(config).values
-    return {"estado": valores["estado"], "presentaciones_recibidas": valores.get("presentaciones_recibidas")}
+    # El contador de la junior no se devuelve: es suyo y quien presenta no lo necesita (SPEC §7).
+    return {"estado": valores["estado"]}

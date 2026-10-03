@@ -46,7 +46,7 @@ function Cafe({ onPropuesta }) {
   }
 
   return (
-    <form onSubmit={generar} className="tarjeta" aria-busy={cargando}>
+    <form onSubmit={generar} className="tarjeta">
       <Titulo>
         El café de {JUNIOR} con {SENIOR}
       </Titulo>
@@ -129,7 +129,7 @@ function Revision({ sesion, onDecision }) {
         { accion, aprobado_por: SENIOR, propuesta_editada: limpia },
         { simulado: sesion.simulado, junior: JUNIOR },
       );
-      onDecision(r);
+      await onDecision(r);
     } catch (err) {
       setError(err.message);
       setEnviando(false);
@@ -137,7 +137,7 @@ function Revision({ sesion, onDecision }) {
   }
 
   return (
-    <section className="tarjeta" aria-busy={enviando}>
+    <section className="tarjeta">
       <Titulo>Revisión de {SENIOR}</Titulo>
       <p className="aviso">
         Propuesta de Relevo, revísala antes de enviar. {JUNIOR} no verá nada hasta que la apruebes.
@@ -254,7 +254,8 @@ export default function Espejo({ onEnCurso }) {
   async function alDecidir(r) {
     setResultado(r);
     if (r.estado === "aprobado") {
-      setHuella(await verHuella(JUNIOR, { simulado: sesion.simulado }));
+      // Si la huella no se puede leer, el feedback aprobado se muestra igualmente.
+      setHuella(await verHuella(JUNIOR, { simulado: sesion.simulado }).catch(() => ({})));
       setPaso("nadia");
     } else {
       setPaso("descartado");

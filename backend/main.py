@@ -1,6 +1,11 @@
+import os
+
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# El reinicio de la demo borra todo el estado; se puede desactivar con RELEVO_DEMO=0.
+MODO_DEMO = os.getenv("RELEVO_DEMO", "1") != "0"
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -93,6 +98,8 @@ def ver_persona(persona_id: str):
 @app.post("/api/demo/reiniciar")
 def reiniciar_demo():
     """Vuelve la demo al estado inicial para poder ensayarla varias veces."""
+    if not MODO_DEMO:
+        raise HTTPException(404, "Not Found")
     red.reiniciar()
     espejo.HUELLA.clear()
     preparador._USADAS.clear()

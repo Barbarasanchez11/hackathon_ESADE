@@ -2,15 +2,28 @@
 
 import copy
 import json
+import uuid
 from pathlib import Path
 
 _ORIGINAL = json.loads((Path(__file__).parent / "datos" / "red.json").read_text(encoding="utf-8"))
 
 PERSONAS: dict[str, dict] = {}
 CONEXIONES: set[frozenset[str]] = set()
+# Cada reinicio de la demo abre una época nueva: los hilos de épocas anteriores dejan de valer.
+EPOCA = 0
+
+
+def nuevo_hilo() -> str:
+    return f"{EPOCA}-{uuid.uuid4()}"
+
+
+def hilo_vigente(thread_id: str) -> bool:
+    return thread_id.startswith(f"{EPOCA}-")
 
 
 def reiniciar() -> None:
+    global EPOCA
+    EPOCA += 1
     datos = copy.deepcopy(_ORIGINAL)
     PERSONAS.clear()
     PERSONAS.update({p["id"]: p for p in datos["personas"]})

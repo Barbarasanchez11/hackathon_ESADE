@@ -73,7 +73,8 @@ def test_preparador_usa_la_eleccion_del_servidor_y_aprobar_suma_una(cliente):
     assert preparador.grafo.get_state({"configurable": {"thread_id": thread_id}}).values["persona"] == "javier"
 
     r = cliente.post(f"/api/preparador/{thread_id}/decision", json={"accion": "aprobar", "aprobado_por": "Marta"})
-    assert r.json() == {"estado": "enviado", "presentaciones_recibidas": 5}
+    assert r.json() == {"estado": "enviado"}
+    assert red.persona("nadia")["presentaciones_recibidas"] == 5
     assert red.se_conocen("nadia", "javier")
 
 

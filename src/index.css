@@ -8,6 +8,7 @@
   --borde: #14121f;
   --borde-suave: #e6dcc8;
   --violeta: #6c2bff;
+  --violeta-suave: #b9a2ff;
   --sobre-violeta: #ffffff;
   --lima: #c6f432;
   --sobre-lima: #14121f;
@@ -31,6 +32,7 @@
     --borde: #f6f2ff;
     --borde-suave: #3a3450;
     --violeta: #a98bff;
+    --violeta-suave: #b9a2ff;
     --sobre-violeta: #14121f;
     --lima: #c6f432;
     --sobre-lima: #14121f;
@@ -103,6 +105,11 @@ button {
 }
 
 /* --- Logo --- */
+
+.titulo-app {
+  margin: 0;
+  font-size: inherit;
+}
 
 .logo {
   display: inline-flex;
@@ -349,7 +356,7 @@ button[aria-disabled="true"] {
 }
 
 .avatar-violeta {
-  background: #b9a2ff;
+  background: var(--violeta-suave);
 }
 
 .avatar-lima {
@@ -414,9 +421,14 @@ button[aria-disabled="true"] {
   color: var(--sobre-lima);
 }
 
-.propuesta:focus-within {
+/* Un solo anillo de foco, en la tarjeta, y solo al navegar con teclado. */
+.propuesta:has(:focus-visible) {
   outline: 3px solid var(--foco);
   outline-offset: 3px;
+}
+
+.propuesta input:focus-visible {
+  outline: none;
 }
 
 .propuesta input {
@@ -677,6 +689,15 @@ h2:focus {
 
   .acciones button {
     flex: 1 1 100%;
+  }
+
+  /* En móvil, todos los botones de las tarjetas a todo el ancho salvo «Quitar» junto a su campo. */
+  .tarjeta button {
+    width: 100%;
+  }
+
+  .tarjeta .fila button {
+    width: auto;
   }
 
   .logo {

@@ -48,7 +48,7 @@ export const PROPUESTAS_SIMULADAS = [
     junior: "iker",
     presentador: "nadia",
     persona_a_presentar: "javier",
-    motivo: "Javier lleva campañas digitales y le interesan las prácticas. A Iker le interesan las redes sociales y busca sus primeras prácticas.",
+    motivo: "A Javier le interesan las campañas digitales y las prácticas. A Iker le interesan las redes sociales y busca sus primeras prácticas.",
   },
   {
     junior: "iker",

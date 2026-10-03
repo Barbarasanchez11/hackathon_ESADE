@@ -38,7 +38,9 @@ export default function App() {
     <div className="app">
       <header className="cabecera">
         <div className="cabecera-fila">
-          <Logo />
+          <h1 className="titulo-app">
+            <Logo />
+          </h1>
           <button type="button" className="enlace" onClick={reiniciar}>
             Reiniciar demo
           </button>

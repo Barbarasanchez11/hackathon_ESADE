@@ -1,7 +1,6 @@
 """Agente Espejo: convierte un café en feedback que la persona senior aprueba (SPEC §5.2)."""
 
 import re
-import uuid
 from datetime import date
 from typing import Literal, Optional, TypedDict
 
@@ -10,6 +9,7 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command, interrupt
 from pydantic import BaseModel
 
+import red
 from agents import modelo
 from agents.modelo import AprobadorNoValido
 
@@ -133,13 +133,15 @@ def iniciar(entrada: EspejoEntrada) -> tuple[str, dict]:
     if not consentimiento_ok(entrada):
         raise SinConsentimiento("Falta el consentimiento de las dos personas para usar el audio.")
     propuesta = generar_feedback(entrada).model_dump()
-    thread_id = str(uuid.uuid4())
+    thread_id = red.nuevo_hilo()
     config = {"configurable": {"thread_id": thread_id}}
     grafo.invoke({"junior": entrada.junior, "senior": entrada.senior, "propuesta": propuesta, "estado": "pendiente"}, config)
     return thread_id, propuesta
 
 
 def decidir(thread_id: str, decision: Decision) -> dict:
+    if not red.hilo_vigente(thread_id):
+        raise KeyError(thread_id)
     config = {"configurable": {"thread_id": thread_id}}
     estado = grafo.get_state(config)
     if estado.next != ("aprobacion_senior",):

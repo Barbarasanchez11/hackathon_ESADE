@@ -1,7 +1,6 @@
 """Agente Conector: propone a quién puede presentar el relevo a la persona junior (SPEC §5.3)."""
 
 import json
-import uuid
 from typing import Optional, TypedDict
 
 from langgraph.checkpoint.memory import InMemorySaver
@@ -131,7 +130,7 @@ def iniciar(entrada: ConectorEntrada) -> tuple[str, dict]:
     )
     propuestas = filtrar(salida, presentador, candidatos)
 
-    thread_id = str(uuid.uuid4())
+    thread_id = red.nuevo_hilo()
     config = {"configurable": {"thread_id": thread_id}}
     grafo.invoke(
         {"junior": entrada.junior_id, "presentador": presentador, "busca": entrada.busca, "propuestas": propuestas, "estado": "pendiente"},
@@ -141,6 +140,8 @@ def iniciar(entrada: ConectorEntrada) -> tuple[str, dict]:
 
 
 def decidir(thread_id: str, decision: DecisionConector) -> dict:
+    if not red.hilo_vigente(thread_id):
+        raise KeyError(thread_id)
     config = {"configurable": {"thread_id": thread_id}}
     estado = grafo.get_state(config)
     if estado.next != ("elegir",):
@@ -157,6 +158,8 @@ def decidir(thread_id: str, decision: DecisionConector) -> dict:
 
 def eleccion_de(thread_id: str) -> dict:
     """La propuesta que eligió el presentador, guardada en el servidor."""
+    if not red.hilo_vigente(thread_id):
+        raise KeyError(thread_id)
     valores = grafo.get_state({"configurable": {"thread_id": thread_id}}).values
     if valores.get("estado") != "elegida":
         raise KeyError(thread_id)

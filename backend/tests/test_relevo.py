@@ -42,7 +42,7 @@ def test_con_cuatro_presentaciones_aun_no_hay_relevo(cliente):
 
 
 def test_pasar_el_relevo_a_iker(cliente):
-    assert _presentar(cliente, "nadia", "marta", "javier", "Marta").json()["presentaciones_recibidas"] == 5
+    assert _presentar(cliente, "nadia", "marta", "javier", "Marta").json() == {"estado": "enviado"}
 
     nadia = cliente.get("/api/red/nadia").json()
     assert nadia["puede_pasar_relevo"] is True
@@ -58,7 +58,9 @@ def test_pasar_el_relevo_a_iker(cliente):
     assert r_otra.status_code == 403
 
     r = _presentar(cliente, "iker", "nadia", "marta", "Nadia")
-    assert r.json() == {"estado": "enviado", "presentaciones_recibidas": 1}
+    # A Nadia no se le devuelve el contador de Iker.
+    assert r.json() == {"estado": "enviado"}
+    assert red.persona("iker")["presentaciones_recibidas"] == 1
 
 
 def test_reiniciar_la_demo(cliente):
@@ -68,3 +70,23 @@ def test_reiniciar_la_demo(cliente):
     assert cliente.get("/api/red/nadia").json()["presentaciones_recibidas"] == 4
     assert espejo.HUELLA == {}
     assert not red.se_conocen("nadia", "javier")
+
+
+def test_reiniciar_invalida_lo_pendiente(cliente):
+    r = cliente.post("/api/conector", json={"junior_id": "nadia", "busca": "Prácticas"})
+    conector_id = r.json()["thread_id"]
+    cliente.post(f"/api/conector/{conector_id}/decision", json={"eleccion": "javier", "decidido_por": "Marta"})
+    thread_id = cliente.post("/api/preparador", json={"conector_thread_id": conector_id}).json()["thread_id"]
+
+    cliente.post("/api/demo/reiniciar")
+    r = cliente.post(f"/api/preparador/{thread_id}/decision", json={"accion": "aprobar", "aprobado_por": "Marta"})
+    assert r.status_code == 404
+    assert cliente.post("/api/preparador", json={"conector_thread_id": conector_id}).status_code == 404
+    assert cliente.get("/api/red/nadia").json()["presentaciones_recibidas"] == 4
+
+
+def test_reinicio_desactivable(cliente, monkeypatch):
+    import main
+
+    monkeypatch.setattr(main, "MODO_DEMO", False)
+    assert cliente.post("/api/demo/reiniciar").status_code == 404

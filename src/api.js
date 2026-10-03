@@ -1,4 +1,5 @@
 import redEjemplo from "../backend/datos/red.json";
+import { PRESENTACIONES_PARA_RELEVO } from "./constantes.js";
 import { BORRADORES_SIMULADOS, PROPUESTA_SIMULADA, PROPUESTAS_SIMULADAS } from "./datos/simulados.js";
 
 const API = "http://localhost:8000/api";
@@ -97,7 +98,6 @@ export async function verHuella(persona, { simulado }) {
 // --- Red, Conector y Preparador ---
 
 // Modo simulado: copia local de la red con las mismas reglas que backend/red.py.
-const RELEVO = 5;
 let personas = {};
 let conexiones = new Set();
 const sesionesConector = new Map();
@@ -122,7 +122,7 @@ reiniciarLocal();
 
 const seConocen = (a, b) => conexiones.has(clave(a, b));
 const contactos = (id) => Object.keys(personas).filter((otro) => otro !== id && seConocen(id, otro)).sort();
-const puedePasarRelevo = (id) => personas[id].presentaciones_recibidas >= RELEVO;
+const puedePasarRelevo = (id) => personas[id].presentaciones_recibidas >= PRESENTACIONES_PARA_RELEVO;
 const relevosDe = (junior) => contactos(junior).filter(puedePasarRelevo);
 const candidatos = (presentador, junior) => contactos(presentador).filter((c) => c !== junior && !seConocen(c, junior));
 const quienVieneDetras = (id) => (puedePasarRelevo(id) ? contactos(id).filter((c) => !puedePasarRelevo(c)) : []);
@@ -163,10 +163,12 @@ export async function verPersona(id) {
   if (!modoSimulado) {
     try {
       return { ...(await pedir(`/red/${id}`)), simulado: false };
-    } catch {
-      // Sigue con la red local.
+    } catch (e) {
+      if (e.status === 404) throw new Error("No conocemos a esa persona en la red.");
+      modoSimulado = true;
     }
   }
+  if (!personas[id]) throw new Error("No conocemos a esa persona en la red.");
   return { ...personaLocal(id), simulado: true };
 }
 
@@ -260,8 +262,9 @@ export async function decidirPreparador(threadId, decision, { simulado }) {
   if (!sesion || sesion.decidido) throw new Error("No hay ninguna propuesta pendiente.");
   comprobarPresentador(decision.aprobado_por, sesion.presentador);
   sesion.decidido = true;
-  if (decision.accion === "descartar") return { estado: "descartado", presentaciones_recibidas: null };
+  if (decision.accion === "descartar") return { estado: "descartado" };
   conexiones.add(clave(sesion.junior, sesion.persona));
   personas[sesion.junior].presentaciones_recibidas += 1;
-  return { estado: "enviado", presentaciones_recibidas: personas[sesion.junior].presentaciones_recibidas };
+  // Como el backend: el contador de la junior no se devuelve a quien presenta.
+  return { estado: "enviado" };
 }

@@ -1,30 +1,57 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { verPersona } from "../api.js";
 import Avatar from "../componentes/Avatar.jsx";
 import CadenaProgreso from "../componentes/CadenaProgreso.jsx";
 import Celebracion from "../componentes/Celebracion.jsx";
 import Titulo from "../componentes/Titulo.jsx";
+import { PRESENTACIONES_PARA_RELEVO } from "../constantes.js";
 import FlujoPresentacion from "./FlujoPresentacion.jsx";
 
 const NADIA = { id: "nadia", nombre: "Nadia" };
 
-// Paso 3 de la demo: con cinco presentaciones, Nadia presenta a quien viene detrás.
+// Paso 3 de la demo: con las presentaciones completas, Nadia presenta a quien viene detrás.
 export default function PasarRelevo({ onEnCurso }) {
   const [nadia, setNadia] = useState(null);
+  const [error, setError] = useState("");
   const [junior, setJunior] = useState(null);
+
+  const cargar = useCallback(() => {
+    setError("");
+    setNadia(null);
+    return verPersona(NADIA.id).then(setNadia, (e) => setError(e.message));
+  }, []);
 
   useEffect(() => {
     let activo = true;
-    verPersona(NADIA.id).then((p) => activo && setNadia(p));
+    verPersona(NADIA.id).then(
+      (p) => activo && setNadia(p),
+      (e) => activo && setError(e.message),
+    );
     return () => {
       activo = false;
     };
   }, []);
 
+  if (error) {
+    return (
+      <section className="tarjeta">
+        <Titulo>No se ha podido cargar la cadena</Titulo>
+        <p role="alert" className="error">
+          {error}
+        </p>
+        <div className="acciones">
+          <button type="button" className="principal" onClick={cargar}>
+            Volver a intentarlo
+          </button>
+        </div>
+      </section>
+    );
+  }
+
   if (!nadia) {
     return (
-      <section className="tarjeta" aria-busy="true">
-        <p>Cargando la cadena de {NADIA.nombre}…</p>
+      <section className="tarjeta">
+        <p aria-live="polite">Cargando la cadena de {NADIA.nombre}…</p>
       </section>
     );
   }
@@ -36,17 +63,18 @@ export default function PasarRelevo({ onEnCurso }) {
         junior={{ id: junior.id, nombre: junior.nombre }}
         presentador={NADIA}
         buscaInicial={`${rol}. Le interesan: ${intereses.join(", ")}.`}
+        notaBusca={`Lo hemos rellenado con lo que ${junior.nombre} comparte en su perfil. Cámbialo si sabes qué busca.`}
         onEnCurso={onEnCurso}
       />
     );
   }
 
   if (!nadia.puede_pasar_relevo) {
-    const faltan = 5 - nadia.presentaciones_recibidas;
+    const faltan = PRESENTACIONES_PARA_RELEVO - nadia.presentaciones_recibidas;
     return (
       <section className="tarjeta">
         <Titulo>Todavía no toca pasar el relevo</Titulo>
-        <CadenaProgreso nombre={NADIA.nombre} recibidas={nadia.presentaciones_recibidas} />
+        <CadenaProgreso nombre={NADIA.nombre} recibidas={nadia.presentaciones_recibidas} total={PRESENTACIONES_PARA_RELEVO} />
         <p>
           A {NADIA.nombre} le {faltan === 1 ? "falta 1 presentación" : `faltan ${faltan} presentaciones`}. Haz primero el
           paso «Presentar a Nadia».
@@ -61,10 +89,10 @@ export default function PasarRelevo({ onEnCurso }) {
       {nadia.simulado && <p className="simulado">Modo demo sin conexión</p>}
       <p className="antetitulo">Vista de {NADIA.nombre}</p>
       <Titulo>¡Ya puedes pasar el relevo!</Titulo>
-      <CadenaProgreso nombre={NADIA.nombre} recibidas={nadia.presentaciones_recibidas} />
+      <CadenaProgreso nombre={NADIA.nombre} recibidas={nadia.presentaciones_recibidas} total={PRESENTACIONES_PARA_RELEVO} />
       <p>
-        Te han presentado a cinco personas sin que tuvieras que pedir nada. Ahora te toca abrirle la puerta a quien viene
-        detrás.
+        Te han presentado a {PRESENTACIONES_PARA_RELEVO} personas sin que tuvieras que pedir nada. Ahora te toca abrirle la
+        puerta a quien viene detrás.
       </p>
 
       {nadia.detras.length === 0 ? (
@@ -75,7 +103,7 @@ export default function PasarRelevo({ onEnCurso }) {
             <li key={d.id} className="persona-detras">
               <Avatar id={d.id} nombre={d.nombre} grande />
               <div>
-                <p className="propuesta-nombre">{d.nombre}</p>
+                <h3 className="propuesta-nombre">{d.nombre}</h3>
                 <p className="motivo">{d.comparte.rol}</p>
                 <ul className="etiquetas" aria-label={`Intereses de ${d.nombre}`}>
                   {(d.comparte.intereses || []).map((i) => (
@@ -86,7 +114,8 @@ export default function PasarRelevo({ onEnCurso }) {
                 </ul>
               </div>
               <button type="button" className="principal" onClick={() => setJunior(d)}>
-                Pasar el relevo a {d.nombre} →
+                Pasar el relevo a {d.nombre}
+                <span aria-hidden="true"> →</span>
               </button>
             </li>
           ))}
