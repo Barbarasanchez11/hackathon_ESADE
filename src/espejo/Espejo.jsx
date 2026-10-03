@@ -241,7 +241,7 @@ function VistaNadia({ feedback, huella, onReiniciar }) {
   );
 }
 
-export default function Espejo({ onEnCurso }) {
+export default function Espejo({ onEnCurso, onCompletado }) {
   const [paso, setPaso] = useState("cafe");
 
   useEffect(() => {
@@ -254,6 +254,7 @@ export default function Espejo({ onEnCurso }) {
   async function alDecidir(r) {
     setResultado(r);
     if (r.estado === "aprobado") {
+      onCompletado?.();
       // Si la huella no se puede leer, el feedback aprobado se muestra igualmente.
       setHuella(await verHuella(JUNIOR, { simulado: sesion.simulado }).catch(() => ({})));
       setPaso("nadia");

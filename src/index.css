@@ -136,46 +136,187 @@ button {
   stroke-width: 2.5;
 }
 
-/* --- Pasos --- */
+/* --- Línea de tiempo (navegación) --- */
 
-.pasos {
+.cabecera-enlaces {
   display: flex;
-  gap: 8px;
-  margin-top: 16px;
-  overflow-x: auto;
-  padding-bottom: 6px;
+  gap: 12px;
 }
 
-.paso {
-  display: inline-flex;
+.linea {
+  margin-top: 18px;
+}
+
+.linea-hitos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr) 64px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.hito {
+  position: relative;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-  padding: 8px 14px 8px 8px;
-  border-radius: 999px;
-  border: 2px solid var(--borde);
+}
+
+/* Tramo de línea hacia el siguiente hito; se pinta en violeta cuando el paso está hecho. */
+.hito:not(.hito-final)::after {
+  content: "";
+  position: absolute;
+  top: 24px;
+  left: calc(50% + 26px);
+  right: calc(-50% + 26px);
+  height: 4px;
+  border-radius: 4px;
+  background: var(--borde-suave);
+  z-index: 0;
+}
+
+.hito:nth-child(3)::after {
+  right: calc(-32px + 22px);
+}
+
+.hito-hecho:not(.hito-final)::after {
+  background: var(--violeta);
+}
+
+.hito-boton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 0 4px 6px;
+  background: none;
+  border: 0;
+  border-radius: 14px;
+  color: var(--texto);
+  text-align: center;
+  box-shadow: none;
+}
+
+.hito-punto {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 3px solid var(--borde);
   background: var(--superficie);
   color: var(--texto);
-  font-weight: 700;
-  font-size: 0.95rem;
+  font-family: "Bricolage Grotesque Variable", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 1.15rem;
+  transition: transform 0.15s ease;
 }
 
-.paso-numero {
-  display: inline-grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
+.hito-hecho .hito-punto {
   background: var(--lima);
   color: var(--sobre-lima);
-  border: 2px solid var(--tinta);
-  font-size: 0.85rem;
 }
 
-.paso-actual {
+.hito-actual .hito-punto {
   background: var(--violeta);
   color: var(--sobre-violeta);
   box-shadow: 3px 3px 0 var(--sombra);
+  transform: scale(1.08);
+}
+
+.hito-titulo {
+  font-family: "Bricolage Grotesque Variable", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+
+.hito-actual .hito-titulo {
+  color: var(--violeta);
+}
+
+.hito-quien {
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+}
+
+.hito-final .hito-punto {
+  width: 40px;
+  height: 40px;
+  margin-top: 4px;
+  border-style: dashed;
+  font-size: 1.1rem;
+}
+
+.hito-final .hito-titulo {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--texto-suave);
+}
+
+/* --- Proceso completo (vertical) --- */
+
+.proceso-etapas {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0 8px;
+}
+
+.etapa {
+  position: relative;
+  padding: 0 0 22px 40px;
+}
+
+/* La línea vertical que une las etapas. */
+.etapa::before {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 26px;
+  bottom: -2px;
+  width: 4px;
+  border-radius: 4px;
+  background: var(--violeta);
+}
+
+.etapa:last-child::before {
+  display: none;
+}
+
+.etapa-punto {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 3px solid var(--borde);
+  background: var(--lima);
+}
+
+.etapa:last-child .etapa-punto {
+  background: var(--superficie);
+  border-style: dashed;
+}
+
+.etapa-titulo {
+  margin: 2px 0 4px;
+}
+
+.etapa-texto {
+  margin: 0;
+}
+
+.etiqueta.etiqueta-ia {
+  background: var(--aviso-fondo);
+}
+
+.etiqueta.etiqueta-persona {
+  background: var(--lima);
+  color: var(--sobre-lima);
 }
 
 /* --- Tarjetas --- */
@@ -704,21 +845,51 @@ h2:focus {
     font-size: 1.7rem;
   }
 
-  /* Los tres pasos caben siempre: número encima y nombre debajo. */
-  .pasos {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    overflow: visible;
+  .linea-hitos {
+    grid-template-columns: repeat(3, 1fr) 44px;
   }
 
-  .paso {
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: 4px;
-    padding: 8px 6px 10px;
-    border-radius: 16px;
+  .hito-punto {
+    width: 42px;
+    height: 42px;
+  }
+
+  .hito:not(.hito-final)::after {
+    top: 21px;
+    left: calc(50% + 23px);
+    right: calc(-50% + 23px);
+  }
+
+  .hito:nth-child(3)::after {
+    right: calc(-22px + 18px);
+  }
+
+  .hito-titulo {
     font-size: 0.8rem;
-    line-height: 1.2;
-    text-align: center;
+  }
+
+  .hito-quien {
+    font-size: 0.72rem;
+  }
+
+  .hito-final .hito-punto {
+    width: 34px;
+    height: 34px;
+  }
+
+  .hito-final .hito-titulo {
+    display: none;
+  }
+
+  .cabecera-enlaces {
+    gap: 4px;
+  }
+
+  .enlace {
+    font-size: 0.85rem;
+  }
+
+  .tarjeta .hito-boton {
+    width: 100%;
   }
 }

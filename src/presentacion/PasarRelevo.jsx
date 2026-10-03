@@ -10,7 +10,7 @@ import FlujoPresentacion from "./FlujoPresentacion.jsx";
 const NADIA = { id: "nadia", nombre: "Nadia" };
 
 // Paso 3 de la demo: con las presentaciones completas, Nadia presenta a quien viene detrás.
-export default function PasarRelevo({ onEnCurso }) {
+export default function PasarRelevo({ onEnCurso, onCompletado }) {
   const [nadia, setNadia] = useState(null);
   const [error, setError] = useState("");
   const [junior, setJunior] = useState(null);
@@ -65,6 +65,7 @@ export default function PasarRelevo({ onEnCurso }) {
         buscaInicial={`${rol}. Le interesan: ${intereses.join(", ")}.`}
         notaBusca={`Lo hemos rellenado con lo que ${junior.nombre} comparte en su perfil. Cámbialo si sabes qué busca.`}
         onEnCurso={onEnCurso}
+        onEnviada={onCompletado}
       />
     );
   }
