@@ -11,7 +11,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 import red
-from agents import conector, espejo, preparador
+from agents import conector, espejo, guardian, preparador
 from agents.modelo import AgenteError, AprobadorNoValido
 
 app = FastAPI(title="Relevo")
@@ -29,7 +29,7 @@ def _errores(funcion, *args):
     """Traduce los errores de los agentes a códigos HTTP comunes."""
     try:
         return funcion(*args)
-    except (espejo.SinConsentimiento, conector.DatosNoValidos) as e:
+    except (espejo.SinConsentimiento, conector.DatosNoValidos, guardian.GuardianBloqueo) as e:
         raise HTTPException(400, str(e))
     except AprobadorNoValido as e:
         raise HTTPException(403, str(e))
@@ -41,8 +41,8 @@ def _errores(funcion, *args):
 
 @app.post("/api/espejo")
 def crear_espejo(entrada: espejo.EspejoEntrada):
-    thread_id, propuesta = _errores(espejo.iniciar, entrada)
-    return {"thread_id": thread_id, "propuesta": propuesta}
+    thread_id, propuesta, avisos = _errores(espejo.iniciar, entrada)
+    return {"thread_id": thread_id, "propuesta": propuesta, "avisos": avisos}
 
 
 @app.post("/api/espejo/{thread_id}/decision")
@@ -68,8 +68,8 @@ def decidir_conector(thread_id: str, decision: conector.DecisionConector):
 
 @app.post("/api/preparador")
 def crear_preparador(entrada: preparador.PreparadorEntrada):
-    thread_id, borrador = _errores(preparador.iniciar, entrada)
-    return {"thread_id": thread_id, "borrador": borrador}
+    thread_id, borrador, avisos = _errores(preparador.iniciar, entrada)
+    return {"thread_id": thread_id, "borrador": borrador, "avisos": avisos}
 
 
 @app.post("/api/preparador/{thread_id}/decision")

@@ -13,14 +13,14 @@ def cliente(monkeypatch):
     preparador._USADAS.clear()
 
     # Propone a todos los candidatos que recibe y a alguien de fuera de la red de quien presenta.
-    def propuestas(junior, presentador, candidatos, busca):
+    def propuestas(junior, presentador, candidatos, busca, correccion=None):
         return conector.ConectorSalida(propuestas=[
             conector.Propuesta(presentador=presentador, persona_a_presentar=c, motivo="Motivo.")
             for c in [*candidatos, "carmen"]
         ])
 
     monkeypatch.setattr(conector, "llamar_modelo", propuestas)
-    monkeypatch.setattr(preparador, "llamar_modelo", lambda eleccion: BORRADOR)
+    monkeypatch.setattr(preparador, "llamar_modelo", lambda eleccion, correccion=None: BORRADOR)
     return TestClient(app)
 
 

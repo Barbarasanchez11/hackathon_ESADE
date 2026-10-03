@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { crearConector, crearPreparador, decidirConector, decidirPreparador } from "../api.js";
 import Avatar from "../componentes/Avatar.jsx";
+import AvisosGuardian from "../componentes/AvisosGuardian.jsx";
 import ListaEditable from "../componentes/ListaEditable.jsx";
 import Titulo from "../componentes/Titulo.jsx";
 
@@ -110,6 +111,7 @@ function Eleccion({ junior, sesion, onElegida, onNinguna }) {
       {sesion.simulado && (
         <p className="aviso aviso-fuerte">Propuestas de ejemplo: no se ha podido conectar con Relevo.</p>
       )}
+      <AvisosGuardian avisos={sesion.simulado ? null : sesion.avisos} />
 
       {sesion.propuestas.length === 0 ? (
         <p>Ahora mismo no vemos a nadie en tu red que encaje con lo que busca {JUNIOR}.</p>
@@ -224,6 +226,7 @@ function Borrador({ junior, sesion, eleccion, onDecision }) {
       {sesion.simulado && (
         <p className="aviso aviso-fuerte">Borrador de ejemplo: no se ha podido conectar con Relevo.</p>
       )}
+      <AvisosGuardian avisos={sesion.simulado ? null : sesion.avisos} />
 
       <label htmlFor="mensaje">Mensaje para {JUNIOR} y {persona}</label>
       <textarea id="mensaje" rows={6} value={b.mensaje_presentacion} onChange={(e) => setB({ ...b, mensaje_presentacion: e.target.value })} />

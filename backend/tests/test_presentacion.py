@@ -19,7 +19,7 @@ def cliente(monkeypatch):
     red.reiniciar()
     preparador._USADAS.clear()
 
-    def propuestas_falsas(junior, presentador, candidatos, busca):
+    def propuestas_falsas(junior, presentador, candidatos, busca, correccion=None):
         return conector.ConectorSalida(propuestas=[
             conector.Propuesta(presentador="marta", persona_a_presentar="sofia", motivo="Datos."),
             conector.Propuesta(presentador="marta", persona_a_presentar="javier", motivo="Marketing."),
@@ -28,7 +28,7 @@ def cliente(monkeypatch):
         ])
 
     monkeypatch.setattr(conector, "llamar_modelo", propuestas_falsas)
-    monkeypatch.setattr(preparador, "llamar_modelo", lambda eleccion: BORRADOR)
+    monkeypatch.setattr(preparador, "llamar_modelo", lambda eleccion, correccion=None: BORRADOR)
     return TestClient(app)
 
 

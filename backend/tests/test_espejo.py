@@ -23,7 +23,7 @@ def cliente(monkeypatch):
     espejo.HUELLA.clear()
     llamadas = []
 
-    def falso(entrada):
+    def falso(entrada, correccion=None):
         llamadas.append(entrada)
         return SALIDA
 
@@ -65,7 +65,7 @@ def test_solo_la_senior_puede_decidir(cliente):
 
 
 def test_si_el_modelo_falla_no_queda_nada_guardado(cliente, monkeypatch):
-    def falla(entrada):
+    def falla(entrada, correccion=None):
         raise espejo.EspejoError("caído")
 
     monkeypatch.setattr(espejo, "llamar_modelo", falla)
@@ -101,7 +101,7 @@ def test_no_se_puede_decidir_dos_veces(cliente):
 def test_salida_no_valida_reintenta_una_vez(monkeypatch):
     llamadas = []
 
-    def falla(entrada):
+    def falla(entrada, correccion=None):
         llamadas.append(1)
         raise ValidationError.from_exception_data("EspejoSalida", [])
 

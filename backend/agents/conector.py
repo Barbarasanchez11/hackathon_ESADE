@@ -9,7 +9,7 @@ from langgraph.types import Command, interrupt
 from pydantic import BaseModel
 
 import red
-from agents import modelo
+from agents import guardian, modelo
 from agents.modelo import AgenteError, AprobadorNoValido
 
 PROMPT = modelo.cargar_prompt("conector")
@@ -57,14 +57,23 @@ def _perfil(id_: str) -> dict:
     return {"id": p["id"], "nombre": p["nombre"], **p["comparte"]}
 
 
-def llamar_modelo(junior: str, presentador: str, candidatos: list[str], busca: str) -> Optional[ConectorSalida]:
+def _fuentes(junior: str, presentador: str, candidatos: list[str], busca: str) -> str:
     datos = {
         "junior": _perfil(junior),
         "busca": busca,
         "relevo": _perfil(presentador),
         "candidatos": [_perfil(c) for c in candidatos],
     }
-    return modelo.parse(PROMPT, json.dumps(datos, ensure_ascii=False, indent=2), ConectorSalida)
+    return json.dumps(datos, ensure_ascii=False, indent=2)
+
+
+def llamar_modelo(
+    junior: str, presentador: str, candidatos: list[str], busca: str, correccion: Optional[str] = None
+) -> Optional[ConectorSalida]:
+    contenido = _fuentes(junior, presentador, candidatos, busca)
+    if correccion:
+        contenido += f"\n\n{correccion}"
+    return modelo.parse(PROMPT, contenido, ConectorSalida)
 
 
 def filtrar(salida: ConectorSalida, presentador: str, candidatos: list[str]) -> list[dict]:
@@ -124,11 +133,18 @@ def iniciar(entrada: ConectorEntrada) -> tuple[str, dict]:
     else:
         raise DatosNoValidos("Hay varias personas que pueden presentarla: indica quién presenta.")
     candidatos = red.candidatos(presentador, entrada.junior_id)
-    salida = modelo.generar_validado(
-        lambda: llamar_modelo(entrada.junior_id, presentador, candidatos, entrada.busca),
-        "El Conector no ha devuelto propuestas válidas.",
+    def generar(correccion: Optional[str]) -> list[dict]:
+        salida = modelo.generar_validado(
+            lambda: llamar_modelo(entrada.junior_id, presentador, candidatos, entrada.busca, correccion),
+            "El Conector no ha devuelto propuestas válidas.",
+        )
+        return filtrar(salida, presentador, candidatos)
+
+    propuestas, avisos = guardian.generar_revisado(
+        generar,
+        lambda ps: "\n".join(f"{p['persona_nombre']}: {p['motivo']}" for p in ps),
+        _fuentes(entrada.junior_id, presentador, candidatos, entrada.busca),
     )
-    propuestas = filtrar(salida, presentador, candidatos)
 
     thread_id = red.nuevo_hilo()
     config = {"configurable": {"thread_id": thread_id}}
@@ -136,7 +152,7 @@ def iniciar(entrada: ConectorEntrada) -> tuple[str, dict]:
         {"junior": entrada.junior_id, "presentador": presentador, "busca": entrada.busca, "propuestas": propuestas, "estado": "pendiente"},
         config,
     )
-    return thread_id, {"presentador": red.persona(presentador)["nombre"], "propuestas": propuestas}
+    return thread_id, {"presentador": red.persona(presentador)["nombre"], "propuestas": propuestas, "avisos": avisos}
 
 
 def decidir(thread_id: str, decision: DecisionConector) -> dict:

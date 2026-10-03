@@ -688,6 +688,71 @@ button[aria-disabled="true"] {
   font-style: italic;
 }
 
+/* --- Guardián --- */
+
+.guardian {
+  margin: 14px 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 2px solid var(--borde);
+}
+
+.guardian-ok {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: var(--superficie);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.guardian-avisos {
+  background: var(--aviso-fondo);
+  box-shadow: 4px 4px 0 var(--violeta);
+}
+
+.guardian-titulo {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 0 0 8px;
+  font-weight: 800;
+}
+
+.guardian-avisos ul {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.guardian-avisos li {
+  display: grid;
+  gap: 4px;
+  padding: 8px 0;
+  border-top: 2px dashed var(--borde-suave);
+}
+
+.guardian-fragmento {
+  font-style: italic;
+}
+
+.guardian-detalle {
+  color: var(--texto-suave);
+  font-size: 0.92rem;
+}
+
+.escudo {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+}
+
+.escudo path {
+  fill: var(--lima);
+  stroke: var(--borde);
+  stroke-width: 2;
+}
+
 /* --- Avisos --- */
 
 .aviso {

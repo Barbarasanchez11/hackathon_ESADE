@@ -9,7 +9,7 @@ from langgraph.types import Command, interrupt
 from pydantic import BaseModel
 
 import red
-from agents import conector, modelo
+from agents import conector, guardian, modelo
 from agents.modelo import AprobadorNoValido
 
 PROMPT = modelo.cargar_prompt("preparador")
@@ -55,7 +55,7 @@ class Estado(TypedDict, total=False):
 _USADAS: set[str] = set()
 
 
-def llamar_modelo(eleccion: dict) -> Optional[PreparadorSalida]:
+def _fuentes(eleccion: dict) -> str:
     datos = {
         "relevo": conector._perfil(eleccion["presentador"]),
         "junior": conector._perfil(eleccion["junior"]),
@@ -63,7 +63,22 @@ def llamar_modelo(eleccion: dict) -> Optional[PreparadorSalida]:
         "lo_que_busca_la_junior": eleccion["busca"],
         "motivo_del_conector": eleccion["motivo"],
     }
-    return modelo.parse(PROMPT, json.dumps(datos, ensure_ascii=False, indent=2), PreparadorSalida)
+    return json.dumps(datos, ensure_ascii=False, indent=2)
+
+
+def llamar_modelo(eleccion: dict, correccion: Optional[str] = None) -> Optional[PreparadorSalida]:
+    contenido = _fuentes(eleccion)
+    if correccion:
+        contenido += f"\n\n{correccion}"
+    return modelo.parse(PROMPT, contenido, PreparadorSalida)
+
+
+def como_texto(b: PreparadorSalida) -> str:
+    fj, fs = b.ficha_para_junior, b.ficha_para_senior
+    return "\n".join([
+        b.mensaje_presentacion, fj.sobre_la_persona, *fj.preguntas_sugeridas, *fj.que_evitar,
+        fs.sobre_la_persona, fs.en_que_puede_ayudar,
+    ])
 
 
 def aprobacion_relevo(estado: Estado) -> Command:
@@ -96,9 +111,14 @@ def iniciar(entrada: PreparadorEntrada) -> tuple[str, dict]:
     if entrada.conector_thread_id in _USADAS:
         raise KeyError(entrada.conector_thread_id)
     eleccion = conector.eleccion_de(entrada.conector_thread_id)
-    borrador = modelo.generar_validado(
-        lambda: llamar_modelo(eleccion), "El Preparador no ha devuelto un borrador válido."
-    ).model_dump()
+    salida, avisos = guardian.generar_revisado(
+        lambda correccion: modelo.generar_validado(
+            lambda: llamar_modelo(eleccion, correccion), "El Preparador no ha devuelto un borrador válido."
+        ),
+        como_texto,
+        _fuentes(eleccion),
+    )
+    borrador = salida.model_dump()
     _USADAS.add(entrada.conector_thread_id)
 
     thread_id = red.nuevo_hilo()
@@ -113,7 +133,7 @@ def iniciar(entrada: PreparadorEntrada) -> tuple[str, dict]:
         },
         config,
     )
-    return thread_id, borrador
+    return thread_id, borrador, avisos
 
 
 def decidir(thread_id: str, decision: DecisionPreparador) -> dict:
@@ -125,6 +145,8 @@ def decidir(thread_id: str, decision: DecisionPreparador) -> dict:
         raise KeyError(thread_id)
     if not conector.es_la_persona(decision.aprobado_por, estado.values["presentador"]):
         raise AprobadorNoValido("Solo quien presenta puede aprobar y enviar la presentación.")
+    if decision.accion == "aprobar" and decision.borrador_editado:
+        guardian.bloquear_si_puntua(como_texto(decision.borrador_editado))
     grafo.invoke(Command(resume=decision.model_dump()), config)
     valores = grafo.get_state(config).values
     # El contador de la junior no se devuelve: es suyo y quien presenta no lo necesita (SPEC §7).

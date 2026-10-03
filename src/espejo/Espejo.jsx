@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { crearEspejo, decidirEspejo, verHuella } from "../api.js";
+import AvisosGuardian from "../componentes/AvisosGuardian.jsx";
 import ListaEditable from "../componentes/ListaEditable.jsx";
 import Titulo from "../componentes/Titulo.jsx";
 import { TRANSCRIPCION_CAFE } from "../datos/cafe.js";
@@ -147,6 +148,7 @@ function Revision({ sesion, onDecision }) {
           Propuesta de ejemplo: no se ha podido conectar con Relevo y esta propuesta no sale de esta conversación.
         </p>
       )}
+      <AvisosGuardian avisos={sesion.simulado ? null : sesion.avisos} />
 
       <ListaEditable titulo="Lo que hizo bien" items={p.bien} onChange={(bien) => setP({ ...p, bien })} />
       <ListaEditable titulo="Lo que puede mejorar" items={p.a_mejorar} onChange={(a_mejorar) => setP({ ...p, a_mejorar })} />

@@ -119,14 +119,21 @@ Propone quién puede presentar a quién dentro de la cadena.
 - **Nunca:** ordenar personas por valía ni mostrar porcentajes de encaje. La lista se basa en motivos, no en puntuaciones; dar prioridad a quien no tiene red heredada es una regla de acceso, no una nota.
 
 ### 5.4 Guardián
-Vigila que todo el sistema cumpla las reglas.
-- **Entrada:** cualquier salida de los otros agentes antes de mostrarla.
+Revisa lo que escriben el Conector, el Preparador y el Espejo antes de que lo vea nadie. Nunca modifica el contenido.
+- **Entrada:** el texto generado y sus fuentes (lo que comparte cada persona, lo que busca la junior, el motivo del Conector o la transcripción del café).
+- **Cómo revisa:**
+  1. Reglas fijas, siempre activas: notas, porcentajes, rankings, correos y teléfonos.
+  2. Revisión con el modelo: afirmaciones sobre personas que no salen de las fuentes.
+- **Qué hace con lo que encuentra:**
+  - Si hay problemas, el agente rehace su respuesta una vez con la corrección.
+  - Si siguen, la persona que aprueba ve los avisos («El Guardián te pide que revises esto»).
+  - Si el Guardián no puede revisar, lo dice («Sin revisar»), en vez de dar el texto por bueno.
+  - En los textos que editan las personas aplica solo las reglas fijas, y una puntuación bloquea el envío (400).
 - **Salida:**
   ```json
-  { "ok": true, "problemas": [{ "tipo": "puntuacion | dato_sensible | sin_consentimiento | sin_aprobacion", "detalle": "string" }] }
+  { "avisos": [{ "tipo": "dato_inventado | puntuacion | dato_sensible | sin_revision", "fragmento": "string", "detalle": "string" }] }
   ```
-- **Aprueba:** no aplica; bloquea y explica. Una persona del equipo revisa los bloqueos.
-- **Nunca:** modificar el contenido por su cuenta; dejar pasar algo sin aprobación humana.
+- **Nunca:** modificar el contenido por su cuenta; dejar pasar nada sin aprobación humana.
 
 ## 6. Evaluación de skills
 
@@ -157,7 +164,6 @@ Huella de evidencias: cada skill se respalda con evidencias concretas de convers
 - [ ] La demo funciona aunque el backend esté caído (datos simulados).
 
 ## Preguntas abiertas
-- [PENDIENTE] El Guardián aún no está implementado ni participa en ningún flujo: hoy solo los prompts y los esquemas sin campos numéricos impiden notas en los textos del Espejo, el Conector y el Preparador, y los borradores editados se envían sin revisar.
 - [PENDIENTE] Sin autenticación, la huella (`GET /api/huella/{persona}`) es visible para cualquiera y se identifica por el nombre. Aceptable para la demo, no para un piloto.
 - [PENDIENTE] Sin autenticación, la interfaz rellena quién decide (el presentador, la senior). El backend comprueba el nombre, pero no puede saber quién ha pulsado el botón.
 - ¿Segmento 1 (impacto social) o 3 (emprendedores) para la persona principal? Este spec usa el 1.

@@ -7,6 +7,7 @@ const ETAPAS = [
     titulo: "Relevo busca en la red de Marta",
     texto: "El Conector propone personas que Marta ya conoce y que encajan con lo que busca Lucía.",
     ia: "Conector",
+    guardian: true,
     persona: "Marta elige a quién presentar",
   },
   {
@@ -14,6 +15,7 @@ const ETAPAS = [
     titulo: "Marta presenta a Lucía y a Javier",
     texto: "El Preparador redacta el mensaje y una ficha para cada uno. Lucía no escribe a nadie.",
     ia: "Preparador",
+    guardian: true,
     persona: "Marta revisa, edita y aprueba",
   },
   {
@@ -27,6 +29,7 @@ const ETAPAS = [
     titulo: "El Espejo convierte el café en aprendizaje",
     texto: "Propone qué salió bien, qué mejorar y evidencias con cita literal. Sin notas.",
     ia: "Espejo",
+    guardian: true,
     persona: "Javier corrige y aprueba",
   },
   {
@@ -52,7 +55,10 @@ export default function Proceso({ onCerrar }) {
   return (
     <section className="tarjeta proceso">
       <Titulo>Cómo funciona Relevo</Titulo>
-      <p className="ayuda">La IA propone, las personas deciden. Nada se envía sin que alguien lo apruebe.</p>
+      <p className="ayuda">
+        La IA propone, las personas deciden. Nada se envía sin que alguien lo apruebe, y el Guardián revisa cada propuesta
+        para que no invente datos ni puntúe a nadie.
+      </p>
       <ol className="proceso-etapas">
         {ETAPAS.map((e, i) => (
           <li key={i} className="etapa">
@@ -63,6 +69,7 @@ export default function Proceso({ onCerrar }) {
             {(e.ia || e.persona) && (
               <ul className="etiquetas">
                 {e.ia && <li className="etiqueta etiqueta-ia">IA propone: {e.ia}</li>}
+                {e.guardian && <li className="etiqueta etiqueta-ia">Revisa: Guardián</li>}
                 {e.persona && <li className="etiqueta etiqueta-persona">Decide: {e.persona}</li>}
               </ul>
             )}

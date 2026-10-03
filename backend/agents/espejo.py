@@ -10,7 +10,7 @@ from langgraph.types import Command, interrupt
 from pydantic import BaseModel
 
 import red
-from agents import modelo
+from agents import guardian, modelo
 from agents.modelo import AprobadorNoValido
 
 PROMPT = modelo.cargar_prompt("espejo")
@@ -80,17 +80,30 @@ def quitar_citas_no_literales(salida: EspejoSalida, texto: str) -> EspejoSalida:
     return salida.model_copy(update={"evidencias": evidencias})
 
 
-def llamar_modelo(entrada: EspejoEntrada) -> Optional[EspejoSalida]:
+def llamar_modelo(entrada: EspejoEntrada, correccion: Optional[str] = None) -> Optional[EspejoSalida]:
     contenido = (
         f"Persona junior: {entrada.junior}\nPersona senior: {entrada.senior}\n\n"
         f"<transcripcion>\n{entrada.texto}\n</transcripcion>"
     )
+    if correccion:
+        contenido += f"\n\n{correccion}"
     return modelo.parse(PROMPT, contenido, EspejoSalida)
 
 
-def generar_feedback(entrada: EspejoEntrada) -> EspejoSalida:
-    salida = modelo.generar_validado(lambda: llamar_modelo(entrada), "El Espejo no ha devuelto un feedback válido.")
-    return quitar_citas_no_literales(salida, entrada.texto)
+def como_texto(s: EspejoSalida) -> str:
+    return "\n".join([*s.bien, *s.a_mejorar, *(f"{e.skill}: {e.evidencia}" for e in s.evidencias), s.siguiente_paso])
+
+
+def generar_feedback(entrada: EspejoEntrada) -> tuple[EspejoSalida, list[dict]]:
+    """Genera el feedback y lo pasa por el Guardián, con la transcripción como única fuente."""
+
+    def generar(correccion: Optional[str]) -> EspejoSalida:
+        salida = modelo.generar_validado(
+            lambda: llamar_modelo(entrada, correccion), "El Espejo no ha devuelto un feedback válido."
+        )
+        return quitar_citas_no_literales(salida, entrada.texto)
+
+    return guardian.generar_revisado(generar, como_texto, entrada.texto)
 
 
 # --- Nodos del grafo ---
@@ -132,11 +145,12 @@ grafo = _construir_grafo()
 def iniciar(entrada: EspejoEntrada) -> tuple[str, dict]:
     if not consentimiento_ok(entrada):
         raise SinConsentimiento("Falta el consentimiento de las dos personas para usar el audio.")
-    propuesta = generar_feedback(entrada).model_dump()
+    salida, avisos = generar_feedback(entrada)
+    propuesta = salida.model_dump()
     thread_id = red.nuevo_hilo()
     config = {"configurable": {"thread_id": thread_id}}
     grafo.invoke({"junior": entrada.junior, "senior": entrada.senior, "propuesta": propuesta, "estado": "pendiente"}, config)
-    return thread_id, propuesta
+    return thread_id, propuesta, avisos
 
 
 def decidir(thread_id: str, decision: Decision) -> dict:
@@ -149,6 +163,8 @@ def decidir(thread_id: str, decision: Decision) -> dict:
     # Sin autenticación (fuera de alcance), al menos solo decide la senior del café.
     if decision.aprobado_por.strip().lower() != estado.values["senior"].strip().lower():
         raise AprobadorNoValido("Solo la persona senior del café puede aprobar o descartar la propuesta.")
+    if decision.accion == "aprobar" and decision.propuesta_editada:
+        guardian.bloquear_si_puntua(como_texto(decision.propuesta_editada))
     grafo.invoke(Command(resume=decision.model_dump()), config)
     valores = grafo.get_state(config).values
     return {"estado": valores["estado"], "feedback": valores.get("feedback")}
