@@ -3,17 +3,17 @@
 import re
 import uuid
 from datetime import date
-from pathlib import Path
 from typing import Literal, Optional, TypedDict
 
-import anthropic
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command, interrupt
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel
 
-MODELO = "claude-sonnet-5-5"
-PROMPT = (Path(__file__).parent.parent / "prompts" / "espejo.md").read_text(encoding="utf-8")
+from agents import modelo
+from agents.modelo import AprobadorNoValido
+
+PROMPT = modelo.cargar_prompt("espejo")
 
 
 class EspejoEntrada(BaseModel):
@@ -45,15 +45,10 @@ class Decision(BaseModel):
     propuesta_editada: Optional[EspejoSalida] = None
 
 
-class EspejoError(Exception):
-    pass
+EspejoError = modelo.AgenteError
 
 
 class SinConsentimiento(EspejoError):
-    pass
-
-
-class AprobadorNoValido(EspejoError):
     pass
 
 
@@ -67,9 +62,6 @@ class Estado(TypedDict, total=False):
 
 # Huella de evidencias en memoria: persona -> lista de evidencias confirmadas.
 HUELLA: dict[str, list[dict]] = {}
-
-_cliente: Optional[anthropic.Anthropic] = None
-
 
 def consentimiento_ok(entrada: EspejoEntrada) -> bool:
     if entrada.origen == "notas":
@@ -89,50 +81,16 @@ def quitar_citas_no_literales(salida: EspejoSalida, texto: str) -> EspejoSalida:
 
 
 def llamar_modelo(entrada: EspejoEntrada) -> Optional[EspejoSalida]:
-    global _cliente
-    if _cliente is None:
-        _cliente = anthropic.Anthropic()
-    try:
-        respuesta = _llamar_api(entrada)
-    except ValidationError:
-        raise
-    # TypeError: el SDK lo lanza si no encuentra credenciales.
-    except (anthropic.AnthropicError, TypeError) as e:
-        raise EspejoError("No se ha podido conectar con el modelo.") from e
-    if respuesta.stop_reason == "refusal":
-        raise EspejoError("El modelo no ha podido procesar esta conversación.")
-    return respuesta.parsed_output
-
-
-def _llamar_api(entrada: EspejoEntrada):
-    return _cliente.beta.messages.parse(
-        model=MODELO,
-        max_tokens=16000,
-        system=PROMPT,
-        messages=[{
-            "role": "user",
-            "content": (
-                f"Persona junior: {entrada.junior}\nPersona senior: {entrada.senior}\n\n"
-                f"<transcripcion>\n{entrada.texto}\n</transcripcion>"
-            ),
-        }],
-        output_format=EspejoSalida,
-        output_config={"effort": "medium"},
-        betas=["server-side-fallback-2026-07-01"],
-        fallbacks="default",
+    contenido = (
+        f"Persona junior: {entrada.junior}\nPersona senior: {entrada.senior}\n\n"
+        f"<transcripcion>\n{entrada.texto}\n</transcripcion>"
     )
+    return modelo.parse(PROMPT, contenido, EspejoSalida)
 
 
 def generar_feedback(entrada: EspejoEntrada) -> EspejoSalida:
-    """Llama al modelo; si la salida no valida, reintenta una vez."""
-    for _ in range(2):
-        try:
-            salida = llamar_modelo(entrada)
-        except ValidationError:
-            continue
-        if salida is not None:
-            return quitar_citas_no_literales(salida, entrada.texto)
-    raise EspejoError("El Espejo no ha devuelto un feedback válido.")
+    salida = modelo.generar_validado(lambda: llamar_modelo(entrada), "El Espejo no ha devuelto un feedback válido.")
+    return quitar_citas_no_literales(salida, entrada.texto)
 
 
 # --- Nodos del grafo ---
