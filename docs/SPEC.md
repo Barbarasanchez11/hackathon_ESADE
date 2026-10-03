@@ -67,9 +67,9 @@ Formato: el usuario hace → el sistema hace → resultado. [PROPUESTA] Los tres
 
 Para cada agente: entrada, salida (JSON), quién aprueba y qué no puede hacer nunca. Todos siguen la skill agente-producto.
 
-Solo el Espejo está descrito en la fase Entender («feedback que la persona senior corrige»). [PROPUESTA] El papel de Preparador, Conector y Guardián lo deducimos de su nombre y de los flujos; hay que confirmarlo.
+Papel y salidas validados por el equipo el 3 oct 2026.
 
-### 5.1 Preparador [PROPUESTA]
+### 5.1 Preparador
 Prepara la presentación y a las dos personas para la conversación.
 - **Entrada:** perfiles de las dos personas (lo que cada una ha decidido compartir) y el motivo de la presentación.
 - **Salida:**
@@ -86,7 +86,7 @@ Prepara la presentación y a las dos personas para la conversación.
 ### 5.2 Espejo
 Convierte cada conversación en aprendizaje.
 - **Entrada:** transcripción del audio (solo con consentimiento de las dos personas) o notas de Nadia.
-- **Salida:** [PROPUESTA]
+- **Salida:**
   ```json
   {
     "bien": ["string"],
@@ -98,7 +98,7 @@ Convierte cada conversación en aprendizaje.
 - **Aprueba:** la persona senior, que corrige el feedback antes de que llegue a Nadia.
 - **Nunca:** puntuar a la persona ni dar una nota; procesar audio sin consentimiento; conservar el audio después de transcribirlo.
 
-### 5.3 Conector [PROPUESTA]
+### 5.3 Conector
 Propone quién puede presentar a quién dentro de la cadena.
 - **Entrada:** lo que busca la persona y la red de la cadena (quién conoce a quién).
 - **Salida:**
@@ -110,7 +110,7 @@ Propone quién puede presentar a quién dentro de la cadena.
 - **Aprueba:** el presentador, que decide si hace la presentación.
 - **Nunca:** ordenar personas por valía ni mostrar porcentajes de encaje. La lista se basa en motivos, no en puntuaciones; dar prioridad a quien no tiene red heredada es una regla de acceso, no una nota.
 
-### 5.4 Guardián [PROPUESTA]
+### 5.4 Guardián
 Vigila que todo el sistema cumpla las reglas.
 - **Entrada:** cualquier salida de los otros agentes antes de mostrarla.
 - **Salida:**
