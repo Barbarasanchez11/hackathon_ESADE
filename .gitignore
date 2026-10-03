@@ -8,3 +8,7 @@ __pycache__/
 .DS_Store
 .claude/settings.local.json
 !.env.example
+
+# Export de Figma Make: solo como referencia de diseño
+Relevo app diseño móvil/
+Relevo app diseño móvil.zip

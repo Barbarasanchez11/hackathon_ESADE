@@ -7,9 +7,9 @@ function colorDe(id) {
   return COLORES[suma % COLORES.length];
 }
 
-export default function Avatar({ id, nombre, grande = false }) {
+export default function Avatar({ id, nombre, tamano = "md" }) {
   return (
-    <span className={`avatar avatar-${colorDe(id)}${grande ? " avatar-grande" : ""}`} aria-hidden="true">
+    <span className={`avatar avatar-${colorDe(id)} avatar-${tamano}`} aria-hidden="true">
       {nombre.slice(0, 2).toUpperCase()}
     </span>
   );

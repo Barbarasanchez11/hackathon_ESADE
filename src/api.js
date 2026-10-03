@@ -7,6 +7,8 @@ const TIMEOUT_MS = 4000;
 
 // Huella local para cuando el backend no responde.
 const huellaSimulada = {};
+// Quien quiera enterarse de que la app ha pasado a datos simulados (la píldora «Modo demo»).
+const oyentesModo = new Set();
 
 async function pedir(ruta, opciones = {}, timeout = TIMEOUT_MS) {
   const control = new AbortController();
@@ -55,6 +57,7 @@ export async function crearEspejo(entrada) {
     const propuesta = structuredClone(PROPUESTA_SIMULADA);
     const fuente = normalizar(entrada.texto);
     propuesta.evidencias = propuesta.evidencias.filter((e) => fuente.includes(normalizar(e.cita)));
+    marcarSimulado();
     return { thread_id: "simulado", propuesta, simulado: true };
   }
 }
@@ -80,7 +83,8 @@ export async function decidirEspejo(threadId, decision, { simulado, junior }) {
   return { estado: "aprobado", feedback };
 }
 
-export async function verHuella(persona, { simulado }) {
+// Sin indicar el modo, se usa el de la sesión: real hasta que alguna llamada pase a datos simulados.
+export async function verHuella(persona, { simulado = modoSimulado } = {}) {
   if (!simulado) {
     try {
       return await pedir(`/huella/${encodeURIComponent(persona)}`);
@@ -117,6 +121,7 @@ function reiniciarLocal() {
   eleccionesUsadas.clear();
   for (const persona of Object.keys(huellaSimulada)) delete huellaSimulada[persona];
   modoSimulado = false;
+  for (const fn of oyentesModo) fn(false);
 }
 reiniciarLocal();
 
@@ -159,13 +164,45 @@ function personaLocal(id) {
   };
 }
 
+export function enModoSimulado() {
+  return modoSimulado;
+}
+
+export function suscribirModo(fn) {
+  oyentesModo.add(fn);
+  return () => oyentesModo.delete(fn);
+}
+
+function marcarSimulado() {
+  if (modoSimulado) return;
+  modoSimulado = true;
+  for (const fn of oyentesModo) fn(true);
+}
+
+// Lo que cada persona ha decidido compartir (nombre, rol, intereses). Nunca el contador ni las conexiones.
+export function perfilCompartido(id) {
+  const p = redEjemplo.personas.find((x) => x.id === id);
+  return p ? { id: p.id, nombre: p.nombre, ...structuredClone(p.comparte) } : null;
+}
+
+// Derecho de supresión (RGPD art. 17): la persona borra su huella.
+export async function borrarHuella(persona) {
+  delete huellaSimulada[persona.toLowerCase()];
+  if (modoSimulado) return;
+  try {
+    await pedir(`/huella/${encodeURIComponent(persona)}`, { method: "DELETE" });
+  } catch {
+    throw new Error("No se ha podido borrar la huella. Vuelve a intentarlo.");
+  }
+}
+
 export async function verPersona(id) {
   if (!modoSimulado) {
     try {
       return { ...(await pedir(`/red/${id}`)), simulado: false };
     } catch (e) {
       if (e.status === 404) throw new Error("No conocemos a esa persona en la red.");
-      modoSimulado = true;
+      marcarSimulado();
     }
   }
   if (!personas[id]) throw new Error("No conocemos a esa persona en la red.");
@@ -211,7 +248,7 @@ export async function crearConector(entrada) {
       return { ...datos, simulado: false };
     } catch (e) {
       if (esErrorDelUsuario(e)) throw e;
-      modoSimulado = true;
+      marcarSimulado();
     }
   }
   return conectorLocal(entrada);

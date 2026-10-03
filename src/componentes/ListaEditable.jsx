@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import Icono from "./Icono.jsx";
 
 export default function ListaEditable({ titulo, items, onChange }) {
   const campos = useRef([]);
@@ -24,26 +25,25 @@ export default function ListaEditable({ titulo, items, onChange }) {
   }
 
   return (
-    <fieldset>
-      <legend>{titulo}</legend>
-      {items.length === 0 && <p className="ayuda">Sin elementos.</p>}
+    <div>
+      {items.length === 0 && <p className="helper">Sin elementos.</p>}
       {items.map((item, i) => (
         <div key={i} className="fila">
           <textarea
             ref={(el) => (campos.current[i] = el)}
+            className="campo-texto"
             aria-label={`${titulo} ${i + 1}`}
-            rows={2}
             value={item}
             onChange={(e) => onChange(items.map((x, j) => (j === i ? e.target.value : x)))}
           />
-          <button type="button" className="secundario" aria-label={`Quitar «${titulo}» ${i + 1}`} onClick={() => quitar(i)}>
-            Quitar
+          <button type="button" className="icono-quitar" aria-label={`Quitar «${titulo}» ${i + 1}`} onClick={() => quitar(i)}>
+            <Icono nombre="x" tamano={16} />
           </button>
         </div>
       ))}
-      <button ref={anadir} type="button" className="secundario" onClick={anadirItem}>
-        Añadir a «{titulo}»
+      <button ref={anadir} type="button" className="anadir" onClick={anadirItem}>
+        + Añadir a «{titulo}»
       </button>
-    </fieldset>
+    </div>
   );
 }
