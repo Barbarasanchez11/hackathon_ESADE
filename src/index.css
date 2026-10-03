@@ -1,0 +1,189 @@
+:root {
+  --fondo: #f7f5f0;
+  --superficie: #ffffff;
+  --texto: #1d1b18;
+  --texto-suave: #57534b;
+  --borde: #d6d1c6;
+  --acento: #1f5f4a;
+  --acento-texto: #ffffff;
+  --aviso-fondo: #fdf3dc;
+  --error: #a3261c;
+  --foco: #1b4fd1;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fondo: #171614;
+    --superficie: #22201d;
+    --texto: #f1eee8;
+    --texto-suave: #bdb7ab;
+    --borde: #45413a;
+    --acento: #7fd1b0;
+    --acento-texto: #10231c;
+    --aviso-fondo: #3a3220;
+    --error: #ff8f85;
+    --foco: #8fb3ff;
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font: 17px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+header p {
+  margin: 4px 0 0;
+  color: var(--texto-suave);
+}
+
+.simulado {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 2px 8px;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+
+.tarjeta {
+  margin: 24px 0;
+  padding: 24px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+}
+
+h2 {
+  margin-top: 0;
+  font-size: 1.3rem;
+}
+
+h3 {
+  font-size: 1.05rem;
+  margin-bottom: 4px;
+}
+
+fieldset {
+  margin: 0 0 20px;
+  padding: 0;
+  border: 0;
+}
+
+legend,
+label[for] {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.opcion {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+textarea {
+  width: 100%;
+  padding: 10px;
+  font: inherit;
+  color: var(--texto);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.fila {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.evidencia {
+  padding: 12px 0;
+  border-top: 1px solid var(--borde);
+}
+
+.skill {
+  margin: 0 0 6px;
+  font-weight: 700;
+}
+
+blockquote {
+  margin: 0 0 8px;
+  padding-left: 12px;
+  border-left: 3px solid var(--acento);
+  color: var(--texto-suave);
+}
+
+.aviso {
+  padding: 12px;
+  background: var(--aviso-fondo);
+  border-radius: 8px;
+}
+
+.ayuda {
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.error {
+  color: var(--error);
+  font-weight: 600;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+button {
+  font: inherit;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.principal {
+  background: var(--acento);
+  color: var(--acento-texto);
+  border: 1px solid var(--acento);
+  font-weight: 600;
+}
+
+.secundario {
+  background: transparent;
+  color: var(--texto);
+  border: 1px solid var(--borde);
+}
+
+:focus-visible {
+  outline: 3px solid var(--foco);
+  outline-offset: 2px;
+}

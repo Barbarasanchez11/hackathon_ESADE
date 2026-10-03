@@ -87,7 +87,20 @@ def llamar_modelo(entrada: EspejoEntrada) -> Optional[EspejoSalida]:
     global _cliente
     if _cliente is None:
         _cliente = anthropic.Anthropic()
-    respuesta = _cliente.beta.messages.parse(
+    try:
+        respuesta = _llamar_api(entrada)
+    except ValidationError:
+        raise
+    # TypeError: el SDK lo lanza si no encuentra credenciales.
+    except (anthropic.AnthropicError, TypeError) as e:
+        raise EspejoError("No se ha podido conectar con el modelo.") from e
+    if respuesta.stop_reason == "refusal":
+        raise EspejoError("El modelo no ha podido procesar esta conversación.")
+    return respuesta.parsed_output
+
+
+def _llamar_api(entrada: EspejoEntrada):
+    return _cliente.beta.messages.parse(
         model=MODELO,
         max_tokens=16000,
         system=PROMPT,
@@ -103,9 +116,6 @@ def llamar_modelo(entrada: EspejoEntrada) -> Optional[EspejoSalida]:
         betas=["server-side-fallback-2026-07-01"],
         fallbacks="default",
     )
-    if respuesta.stop_reason == "refusal":
-        raise EspejoError("El modelo no ha podido procesar esta conversación.")
-    return respuesta.parsed_output
 
 
 def generar_feedback(entrada: EspejoEntrada) -> EspejoSalida:
